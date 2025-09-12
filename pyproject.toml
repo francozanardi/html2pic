@@ -1,0 +1,74 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "html2pic"
+version = "0.1.1"
+description = "Convert HTML + CSS to images"
+authors = [
+    {name = "Franco Zanardi", email = "francozanardi97@gmail.com"},
+]
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.8"
+keywords = ["html", "css", "image", "conversion", "rendering"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Graphics :: Graphics Conversion",
+    "Topic :: Text Processing :: Markup :: HTML",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "pictex",
+    "beautifulsoup4>=4.9.0",
+    "tinycss2>=1.1.0",
+]
+
+[project.optional-dependencies]
+examples = [
+    "pillow>=8.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/francozanardi/html2pic"
+Repository = "https://github.com/francozanardi/html2pic.git"
+"Bug Tracker" = "https://github.com/francozanardi/html2pic/issues"
+Documentation = "https://github.com/francozanardi/html2pic/blob/main/README.md"
+Examples = "https://github.com/francozanardi/html2pic/tree/main/examples"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/html2pic"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov=html2pic --cov-report=term-missing"
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+
+[tool.coverage.run]
+source = ["src/html2pic"]
+omit = [
+    "*/tests/*",
+    "*/examples/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
