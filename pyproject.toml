@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "html2pic"
 version = "0.1.1"
-description = "Convert HTML + CSS to images"
+description = "Convert HTML + CSS to images without a browser"
 authors = [
     {name = "Franco Zanardi", email = "francozanardi97@gmail.com"},
 ]
