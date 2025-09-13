@@ -346,6 +346,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 🙏 Acknowledgments
 
-- Built on top of [PicTex](https://github.com/your-pictex-repo) for high-quality rendering
+- Built on top of [PicTex](https://github.com/francozanardi/pictex) for high-quality rendering
 - Uses [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/) for HTML parsing  
 - Uses [tinycss2](https://github.com/Kozea/tinycss2) for CSS parsing
