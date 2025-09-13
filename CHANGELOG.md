@@ -2,6 +2,26 @@
 
 All notable changes to html2pic will be documented in this file.
 
+## [0.1.2] - 2024-09-13
+
+### ✨ New Features
+- **@font-face Support**: Full CSS @font-face declarations with advanced font loading
+  - Complete @font-face parsing with `font-family`, `src`, `font-weight`, and `font-style` properties
+  - Support for multiple font weights and styles (normal, bold, italic) per font family
+  - Flexible font source paths: relative paths, absolute paths, and URLs
+
+### 🔧 Improvements
+- Enhanced CSS parser to detect and process @font-face at-rules separately from regular CSS rules
+- Added FontRegistry system for managing and resolving font declarations
+- Updated font resolution logic to match fonts by weight and style specifications
+- Improved typography system to use advanced font fallback chains instead of single font selection
+
+### 🏗️ Architecture Changes
+- Added `FontFace` and `FontRegistry` classes to `models.py`
+- Extended CSS parser with @font-face specific parsing methods
+- Updated style engine and translator to integrate font registry throughout the rendering pipeline
+- Modified core `Html2Pic` class to expose font registry in debug information
+
 ## [0.1.1] - 2024-09-12
 
 ### ✨ New Features
