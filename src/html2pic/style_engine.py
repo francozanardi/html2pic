@@ -3,7 +3,7 @@ Style computation engine - handles cascading, specificity, and inheritance
 """
 
 from typing import List, Dict, Any
-from .models import DOMNode, CSSRule, ParsedSelector, SelectorType, DEFAULT_STYLES
+from .models import DOMNode, CSSRule, ParsedSelector, SelectorType, DEFAULT_STYLES, FontRegistry
 from pictex import SolidColor
 from .warnings_system import get_warning_collector, WarningCategory
 
@@ -27,24 +27,29 @@ class StyleEngine:
     def __init__(self, base_font_size: int = 16):
         """
         Initialize the style engine.
-        
+
         Args:
             base_font_size: Base font size in pixels for em/rem calculations
         """
         self.base_font_size = base_font_size
         self.warnings = get_warning_collector()
+        self.font_registry: FontRegistry = None
     
-    def apply_styles(self, dom_tree: DOMNode, css_rules: List[CSSRule]) -> DOMNode:
+    def apply_styles(self, dom_tree: DOMNode, css_rules: List[CSSRule], font_registry: FontRegistry = None) -> DOMNode:
         """
         Apply CSS rules to a DOM tree, computing final styles for each node.
-        
+
         Args:
             dom_tree: Root DOM node
             css_rules: List of parsed CSS rules
-            
+            font_registry: FontRegistry containing @font-face declarations
+
         Returns:
             DOM tree with computed_styles populated
         """
+        # Store font registry for use in font resolution
+        self.font_registry = font_registry
+
         # Apply styles recursively, starting from root
         self._apply_styles_recursive(dom_tree, css_rules, parent_styles={})
         return dom_tree

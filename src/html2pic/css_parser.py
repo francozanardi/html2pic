@@ -2,9 +2,9 @@
 CSS parser using tinycss2 to extract style rules
 """
 
-from typing import List, Dict
+from typing import List, Dict, Tuple, Optional
 import tinycss2
-from .models import CSSRule, ParsedSelector, SelectorType
+from .models import CSSRule, ParsedSelector, SelectorType, FontFace, FontRegistry
 from .exceptions import ParseError
 from .warnings_system import get_warning_collector, WarningCategory
 
@@ -20,36 +20,43 @@ class CssParser:
     
     def __init__(self):
         self.warnings = get_warning_collector()
+        self.font_registry = FontRegistry()
     
-    def parse(self, css_content: str) -> List[CSSRule]:
+    def parse(self, css_content: str) -> Tuple[List[CSSRule], FontRegistry]:
         """
-        Parse CSS string into a list of CSS rules.
-        
+        Parse CSS string into a list of CSS rules and font registry.
+
         Args:
             css_content: CSS content as string
-            
+
         Returns:
-            List of CSSRule objects
-            
+            Tuple of (List of CSSRule objects, FontRegistry with @font-face declarations)
+
         Raises:
             ParseError: If CSS parsing fails
         """
         if not css_content.strip():
-            return []
-            
+            return [], self.font_registry
+
         try:
+            # Clear existing font registry
+            self.font_registry.clear()
+
             # Parse CSS with tinycss2
             stylesheet = tinycss2.parse_stylesheet(css_content)
-            
+
             rules = []
             for rule in stylesheet:
-                if hasattr(rule, 'prelude') and hasattr(rule, 'content'):
+                if hasattr(rule, 'at_keyword') and rule.at_keyword == 'font-face':
+                    # This is a @font-face at-rule
+                    self._process_font_face_rule(rule)
+                elif hasattr(rule, 'prelude') and hasattr(rule, 'content'):
                     # This is a qualified rule (selector + declarations)
                     css_rules = self._process_rule(rule)
                     rules.extend(css_rules)
-            
-            return rules
-            
+
+            return rules, self.font_registry
+
         except Exception as e:
             raise ParseError(f"Failed to parse CSS: {e}") from e
     
@@ -110,13 +117,14 @@ class CssParser:
         
         return selectors if selectors else ['*']  # Fallback to universal selector
     
-    def _extract_declarations(self, content) -> Dict[str, str]:
+    def _extract_declarations(self, content, skip_validation: bool = False) -> Dict[str, str]:
         """
         Extract property: value declarations from rule content.
-        
+
         Args:
             content: tinycss2 rule content tokens
-            
+            skip_validation: Skip validation for @font-face properties
+
         Returns:
             Dictionary mapping property names to values
         """
@@ -131,8 +139,9 @@ class CssParser:
                 property_name = item.name.lower()
                 property_value = ''.join(token.serialize() for token in item.value).strip()
                 
-                # Check for unsupported properties
-                self._check_unsupported_property(property_name, property_value)
+                # Check for unsupported properties (skip for @font-face)
+                if not skip_validation:
+                    self._check_unsupported_property(property_name, property_value)
                 
                 # Handle shorthand properties
                 if property_name == 'padding':
@@ -288,3 +297,168 @@ class CssParser:
                 WarningCategory.CSS_PARSING,
                 {'property': property_name, 'value': property_value, 'limitation': partially_supported[property_name]}
             )
+
+    def _process_font_face_rule(self, rule):
+        """
+        Process a @font-face CSS rule and add it to the font registry.
+
+        Args:
+            rule: tinycss2 AtRule object for @font-face
+        """
+        try:
+            # Extract declarations from the @font-face rule (skip validation)
+            declarations = self._extract_declarations(rule.content, skip_validation=True)
+
+            # Extract required font-face properties
+            font_family = declarations.get('font-family', '').strip('"\'')
+            src = declarations.get('src', '')
+
+            if not font_family:
+                self.warnings.warn(
+                    "@font-face rule missing font-family property",
+                    WarningCategory.CSS_PARSING,
+                    {'rule_type': 'font-face', 'issue': 'missing_font_family'}
+                )
+                return
+
+            if not src:
+                self.warnings.warn(
+                    f"@font-face rule for '{font_family}' missing src property",
+                    WarningCategory.CSS_PARSING,
+                    {'rule_type': 'font-face', 'font_family': font_family, 'issue': 'missing_src'}
+                )
+                return
+
+            # Parse src property to extract font file path
+            font_src = self._parse_font_src(src)
+            if not font_src:
+                self.warnings.warn(
+                    f"@font-face rule for '{font_family}' has invalid src: {src}",
+                    WarningCategory.CSS_PARSING,
+                    {'rule_type': 'font-face', 'font_family': font_family, 'src': src, 'issue': 'invalid_src'}
+                )
+                return
+
+            # Extract optional properties with defaults
+            font_weight = self._normalize_font_weight(declarations.get('font-weight', 'normal'))
+            font_style = declarations.get('font-style', 'normal')
+
+            # Create FontFace and add to registry
+            font_face = FontFace(
+                family=font_family,
+                src=font_src,
+                weight=font_weight,
+                style=font_style
+            )
+
+            self.font_registry.add_font_face(font_face)
+
+        except Exception as e:
+            self.warnings.warn(
+                f"Failed to process @font-face rule: {e}",
+                WarningCategory.CSS_PARSING,
+                {'rule_type': 'font-face', 'error': str(e)}
+            )
+
+    def _parse_font_src(self, src: str) -> Optional[str]:
+        """
+        Parse CSS font src property and extract the font file path.
+
+        Supports:
+        - url("path/to/font.woff2")
+        - url('path/to/font.ttf')
+        - url(path/to/font.otf)
+        - url('font.ttf') format('truetype')
+        - url('font.woff2') format('woff2')
+        - Multiple src values (returns the first valid one)
+
+        Args:
+            src: CSS src property value
+
+        Returns:
+            Font file path/URL or None if parsing fails
+        """
+        src = src.strip()
+
+        # Handle multiple src values separated by comma
+        src_values = [s.strip() for s in src.split(',')]
+
+        for src_value in src_values:
+            # Parse src value which may contain url() and format()
+            font_url = self._extract_url_from_src(src_value)
+            if font_url:
+                return font_url
+
+        return None
+
+    def _extract_url_from_src(self, src_value: str) -> Optional[str]:
+        """
+        Extract URL from a single src value that may contain url() and format().
+
+        Examples:
+        - url("font.ttf") -> "font.ttf"
+        - url('font.woff2') format('woff2') -> "font.woff2"
+        - url(font.otf) format("opentype") -> "font.otf"
+        """
+        src_value = src_value.strip()
+
+        # Find url() function
+        url_start = src_value.find('url(')
+        if url_start == -1:
+            return None
+
+        # Find the matching closing parenthesis for url()
+        paren_count = 0
+        url_end = -1
+
+        for i in range(url_start + 4, len(src_value)):
+            if src_value[i] == '(':
+                paren_count += 1
+            elif src_value[i] == ')':
+                if paren_count == 0:
+                    url_end = i
+                    break
+                paren_count -= 1
+
+        if url_end == -1:
+            return None
+
+        # Extract content between url( and )
+        url_content = src_value[url_start + 4:url_end].strip()
+
+        # Remove quotes if present
+        if (url_content.startswith('"') and url_content.endswith('"')) or \
+           (url_content.startswith("'") and url_content.endswith("'")):
+            url_content = url_content[1:-1]
+
+        return url_content
+
+    def _normalize_font_weight(self, weight: str) -> str:
+        """
+        Normalize CSS font-weight value to numeric string.
+
+        Args:
+            weight: CSS font-weight value (normal, bold, 100-900, etc.)
+
+        Returns:
+            Normalized weight as string (400, 700, etc.)
+        """
+        weight = weight.strip().lower()
+
+        # Map named weights to numeric values
+        weight_map = {
+            'normal': '400',
+            'bold': '700',
+            'lighter': '300',  # Simplified
+            'bolder': '700'    # Simplified
+        }
+
+        if weight in weight_map:
+            return weight_map[weight]
+
+        # Check if it's already numeric (100, 200, ..., 900)
+        if weight.isdigit() and 100 <= int(weight) <= 900:
+            return weight
+
+        # Default to normal weight
+        return '400'

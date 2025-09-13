@@ -5,7 +5,7 @@ DOM to PicTex translation layer - converts styled DOM tree to PicTex builders
 from typing import Optional, Tuple, List, Union, Dict, Any
 from pictex import *
 from pictex import BorderStyle
-from .models import DOMNode
+from .models import DOMNode, FontRegistry
 from .exceptions import RenderError
 from .warnings_system import get_warning_collector, WarningCategory
 
@@ -25,20 +25,25 @@ class PicTexTranslator:
     
     def __init__(self):
         self.warnings = get_warning_collector()
+        self.font_registry: FontRegistry = None
     
-    def translate(self, styled_dom: DOMNode) -> Tuple[Canvas, Optional[Element]]:
+    def translate(self, styled_dom: DOMNode, font_registry: FontRegistry = None) -> Tuple[Canvas, Optional[Element]]:
         """
         Translate a styled DOM tree to PicTex builders.
-        
+
         Args:
             styled_dom: Root DOM node with computed styles
-            
+            font_registry: FontRegistry containing @font-face declarations
+
         Returns:
             Tuple of (Canvas, root_element) where root_element may be None for empty docs
-            
+
         Raises:
             RenderError: If translation fails
         """
+        # Store font registry for use in font resolution
+        self.font_registry = font_registry
+
         try:
             # Create base canvas
             canvas = Canvas()
@@ -393,13 +398,38 @@ class PicTexTranslator:
     
     def _apply_text_styles(self, builder: Element, styles: Dict[str, Any]) -> Element:
         """Apply typography styles to a builder."""
-        
-        # Font family
+
+        # Font family with @font-face support and fallbacks
         font_family = styles.get('font-family', '')
         if font_family and font_family != 'Arial, sans-serif':  # Skip default
-            # Take first font from font stack
-            first_font = font_family.split(',')[0].strip().strip('"\'')
-            builder = builder.font_family(first_font)
+            font_weight = styles.get('font-weight', '400')
+            font_style = styles.get('font-style', 'normal')
+
+            # Normalize font-weight to numeric string
+            if font_weight.isdigit():
+                weight_str = font_weight
+            elif font_weight in ['bold', 'bolder']:
+                weight_str = '700'
+            elif font_weight in ['normal']:
+                weight_str = '400'
+            else:
+                weight_str = '400'
+
+            # Use font registry to resolve font family to fallback list
+            if self.font_registry:
+                font_list = self.font_registry.resolve_font_family(font_family, weight_str, font_style)
+            else:
+                # Fallback to old behavior: split by comma
+                font_list = [name.strip().strip('"\'') for name in font_family.split(',')]
+
+            # Use PicTex font_fallbacks if we have multiple fonts, otherwise font_family
+            if len(font_list) > 1:
+                main_font = font_list[0]
+                font_fallbacks = font_list[1:]
+                builder = builder.font_family(main_font)
+                builder = builder.font_fallbacks(*font_fallbacks)
+            elif len(font_list) == 1:
+                builder = builder.font_family(font_list[0])
         
         # Font size
         font_size = styles.get('font-size', '16px')

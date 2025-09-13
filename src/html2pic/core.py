@@ -68,6 +68,7 @@ class Html2Pic:
         # Parsed content (lazy loaded)
         self._dom_tree = None
         self._style_rules = None
+        self._font_registry = None
         self._styled_tree = None
     
     @property
@@ -80,15 +81,23 @@ class Html2Pic:
                 raise ParseError(f"Failed to parse HTML: {e}") from e
         return self._dom_tree
     
-    @property  
+    @property
     def style_rules(self):
         """Lazily parse and return the CSS style rules"""
         if self._style_rules is None:
             try:
-                self._style_rules = self.css_parser.parse(self.css)
+                self._style_rules, self._font_registry = self.css_parser.parse(self.css)
             except Exception as e:
                 raise ParseError(f"Failed to parse CSS: {e}") from e
         return self._style_rules
+
+    @property
+    def font_registry(self):
+        """Lazily parse and return the font registry"""
+        if self._font_registry is None:
+            # This will trigger CSS parsing which populates font_registry
+            _ = self.style_rules
+        return self._font_registry
     
     @property
     def styled_tree(self):
@@ -96,8 +105,9 @@ class Html2Pic:
         if self._styled_tree is None:
             try:
                 self._styled_tree = self.style_engine.apply_styles(
-                    self.dom_tree, 
-                    self.style_rules
+                    self.dom_tree,
+                    self.style_rules,
+                    self.font_registry
                 )
             except Exception as e:
                 raise RenderError(f"Failed to apply styles: {e}") from e
@@ -118,15 +128,15 @@ class Html2Pic:
         """
         try:
             # Translate styled DOM tree to PicTex builders
-            canvas, root_element = self.translator.translate(self.styled_tree)
-            
+            canvas, root_element = self.translator.translate(self.styled_tree, self.font_registry)
+
             # Render using PicTex
             if root_element is None:
                 # Empty document, just render the canvas
                 return canvas.render("", crop_mode=crop_mode)
             else:
                 return canvas.render(root_element, crop_mode=crop_mode)
-                
+
         except Exception as e:
             raise RenderError(f"Failed to render image: {e}") from e
     
@@ -144,15 +154,15 @@ class Html2Pic:
             Html2PicError: If any step in the conversion process fails
         """
         try:
-            # Translate styled DOM tree to PicTex builders  
-            canvas, root_element = self.translator.translate(self.styled_tree)
-            
+            # Translate styled DOM tree to PicTex builders
+            canvas, root_element = self.translator.translate(self.styled_tree, self.font_registry)
+
             # Render as SVG using PicTex
             if root_element is None:
                 return canvas.render_as_svg("", embed_font=embed_font)
             else:
                 return canvas.render_as_svg(root_element, embed_font=embed_font)
-                
+
         except Exception as e:
             raise RenderError(f"Failed to render SVG: {e}") from e
     
@@ -165,7 +175,8 @@ class Html2Pic:
         """
         return {
             "dom_tree": self.dom_tree,
-            "style_rules": self.style_rules, 
+            "style_rules": self.style_rules,
+            "font_registry": self.font_registry,
             "styled_tree": self.styled_tree,
             "base_font_size": self.base_font_size,
             "warnings": self.get_warnings(),

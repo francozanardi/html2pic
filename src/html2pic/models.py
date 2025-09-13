@@ -5,6 +5,7 @@ Data models for DOM nodes and CSS styles
 from typing import List, Dict, Any, Optional, Union
 from dataclasses import dataclass, field
 from enum import Enum
+import os
 
 class NodeType(Enum):
     """Types of DOM nodes"""
@@ -166,3 +167,99 @@ DEFAULT_STYLES = {
     'bottom': 'auto',
     'left': 'auto',
 }
+
+
+@dataclass
+class FontFace:
+    """
+    Represents a @font-face declaration from CSS.
+
+    Example:
+    @font-face {
+        font-family: "MyFont";
+        src: url("myfont.woff2");
+        font-weight: normal;
+        font-style: normal;
+    }
+    """
+    family: str  # The font-family name declared in the @font-face rule
+    src: str     # The font file path or URL
+    weight: str = "400"  # Font weight (normal, bold, 100-900)
+    style: str = "normal"  # Font style (normal, italic)
+
+    def matches(self, family: str, weight: str = "400", style: str = "normal") -> bool:
+        """Check if this font face matches the given criteria"""
+        return (self.family.lower() == family.lower() and
+                self.weight == weight and
+                self.style == style)
+
+
+class FontRegistry:
+    """
+    Registry for managing @font-face declarations and font resolution.
+
+    This class stores all @font-face rules and provides methods to resolve
+    font-family declarations to actual font paths with fallbacks.
+    """
+
+    def __init__(self):
+        self.font_faces: List[FontFace] = []
+
+    def add_font_face(self, font_face: FontFace):
+        """Add a @font-face declaration to the registry"""
+        self.font_faces.append(font_face)
+
+    def clear(self):
+        """Clear all registered font faces"""
+        self.font_faces.clear()
+
+    def resolve_font_family(self, font_family_value: str, weight: str = "400", style: str = "normal") -> List[str]:
+        """
+        Resolve a CSS font-family value to a list of font paths/names for PicTex.
+
+        Takes a font-family value like "MyFont, Arial, sans-serif" and returns
+        a list of font paths/names that PicTex can use, in fallback order.
+
+        Args:
+            font_family_value: CSS font-family value (may contain multiple fonts)
+            weight: Font weight to match (currently ignored - uses exact family match only)
+            style: Font style to match (currently ignored - uses exact family match only)
+
+        Returns:
+            List of font names/paths in fallback order for use with PicTex font_fallbacks()
+        """
+        # Split the font-family value by comma and clean each font name
+        font_names = [name.strip().strip('"\'') for name in font_family_value.split(',')]
+        resolved_fonts = []
+
+        for font_name in font_names:
+            # Try to find an exact @font-face declaration for this family
+            matching_font = self._find_exact_font_face(font_name)
+            if matching_font:
+                # Use the font file path from @font-face
+                resolved_fonts.append(matching_font.src)
+            else:
+                # Use the font name as-is (system font or font file path)
+                resolved_fonts.append(font_name)
+
+        return resolved_fonts if resolved_fonts else ["Arial"]  # Fallback to Arial
+
+    def _find_exact_font_face(self, family: str) -> Optional[FontFace]:
+        """
+        Find a @font-face declaration that exactly matches the font family name.
+
+        This simplified approach just matches by family name, ignoring weight and style.
+        CSS font fallbacks will handle the weight/style matching.
+        """
+        for font_face in self.font_faces:
+            if font_face.family.lower() == family.lower():
+                return font_face
+        return None
+
+    def get_font_families(self) -> List[str]:
+        """Get all registered font family names"""
+        return list(set(font_face.family for font_face in self.font_faces))
+
+    def __len__(self) -> int:
+        """Return number of registered font faces"""
+        return len(self.font_faces)

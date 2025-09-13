@@ -19,7 +19,7 @@ Use this library for prototyping, experimentation, and non-critical applications
 
 - **No Browser Required**: Pure Python implementation using PicTex as the rendering engine
 - **Flexbox Support**: Modern CSS layout with `display: flex`, `justify-content`, `align-items`, etc.
-- **Rich Typography**: Font families, sizes, weights, colors, and text decorations
+- **Rich Typography**: Font families, sizes, weights, colors, text decorations, and @font-face support
 - **Box Model**: Complete support for padding, margins, borders, and border-radius  
 - **Responsive Sizing**: Supports px, em, rem, % units and flexible sizing modes
 - **High Quality Output**: Vector (SVG) and raster (PNG, JPG) output formats
@@ -113,22 +113,56 @@ html2pic works by translating HTML + CSS concepts to PicTex builders:
 - `color`, `text-align`, `line-height`
 - `text-decoration` (underline, line-through)
 - `text-shadow` (offset-x, offset-y, blur-radius, color)
+- `@font-face` declarations with full weight and style matching
 
 #### Font Loading
-html2pic supports loading fonts from the system or custom font files:
 
+html2pic supports multiple ways to load custom fonts with proper fallback support:
+
+**@font-face Support (Recommended)**
+```css
+/* Define custom fonts with @font-face */
+@font-face {
+    font-family: "MyCustomFont";
+    src: url("./fonts/custom-font.ttf");
+    font-weight: normal;
+    font-style: normal;
+}
+
+@font-face {
+    font-family: "MyCustomFont";
+    src: url("./fonts/custom-font-bold.ttf");
+    font-weight: bold;
+    font-style: normal;
+}
+
+/* Use with fallbacks */
+h1 {
+    font-family: "MyCustomFont", Arial, sans-serif;
+    font-weight: bold;
+}
+```
+
+**Direct Font File References**
 ```css
 /* System font */
 font-family: "Arial", sans-serif;
 
-/* Custom font file (provide absolute path) */
+/* Custom font file (provide absolute or relative path) */
 font-family: "/path/to/custom-font.ttf";
 
 /* Multiple fallbacks */
 font-family: "Custom Font", "Arial", sans-serif;
 ```
 
-**Note**: When using custom fonts, provide the full path to the font file (.ttf, .otf). If the font cannot be loaded, it will fall back to system defaults.
+**Features:**
+- **@font-face declarations**: Full CSS @font-face support with font-family, src, font-weight, and font-style
+- **Font fallbacks**: Automatic fallback chain resolution - @font-face fonts are prioritized, then system fonts. **Font fallbacks are only used for not supported glyphs in the previous font, but the provided fonts must exist**. 
+- **Weight and style matching**: Different font files for different weights (normal, bold) and styles (normal, italic)
+- **Flexible paths**: Support for relative paths, absolute paths, and URLs in src property
+- **PicTex integration**: Uses PicTex's `font_fallbacks()` function for optimal font rendering
+
+**Note**: When using @font-face, provide paths to font files (.ttf, .otf, .woff2). If a font cannot be loaded, the system automatically falls back to the next font in the fallback chain.
 
 #### Linear Gradients
 html2pic supports CSS linear-gradient syntax for backgrounds:
@@ -160,9 +194,12 @@ background-image: linear-gradient(45deg, yellow, orange, red, purple);
 - `position: absolute` with `left` and `top` properties (px, %, em, rem)
 - **Limitation**: Only `left` and `top` are supported, not `right` or `bottom`
 
+### CSS At-Rules
+- `@font-face` declarations for custom font loading
+
 ### CSS Selectors
 - Tag selectors: `div`, `p`, `h1`
-- Class selectors: `.my-class`  
+- Class selectors: `.my-class`
 - ID selectors: `#my-id`
 - Universal selector: `*`
 
