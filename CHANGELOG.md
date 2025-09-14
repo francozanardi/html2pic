@@ -2,6 +2,39 @@
 
 All notable changes to html2pic will be documented in this file.
 
+## [0.1.3] - 2024-09-13
+
+### ✨ New Features
+- **Individual Border-Radius Properties**: Full support for individual corner border-radius properties
+  - `border-top-left-radius`, `border-top-right-radius`, `border-bottom-left-radius`, `border-bottom-right-radius`
+  - Works alongside existing shorthand `border-radius` property
+  - Support for both px and percentage values for each corner
+  - Proper priority handling: individual properties override shorthand when specified
+
+- **Alpha Channel Color Support**: Enhanced color handling with full alpha channel support
+  - RGBA colors now properly rendered with transparency
+  - Alpha values below 0.01 automatically converted to 'transparent'
+  - Improved color validation and normalization
+  - Full hex RGBA support (#rrggbbaa format)
+
+- **Display None Support**: Complete CSS `display: none` implementation
+  - Elements with `display: none` are completely omitted from rendering
+  - Children of hidden elements are also properly excluded
+  - Zero performance impact for hidden elements (not rendered at all)
+  - Semantically correct behavior matching standard CSS
+
+### 🔧 Improvements
+- Enhanced CSS parser to recognize and validate individual border-radius properties
+- Updated translator to use PicTex's native 4-corner border-radius API
+- Improved color parsing system with better error handling and transparency support
+- Optimized element generation to skip hidden elements entirely
+
+### 🏗️ Architecture Changes
+- Extended CSS property validation lists to include individual border-radius properties
+- Modified translator's `_get_border_radius_values()` to return proper PicTex format
+- Updated style engine's `_normalize_display()` to handle 'none' value
+- Added early return logic in `_create_element_builder()` for display: none elements
+
 ## [0.1.2] - 2024-09-13
 
 ### ✨ New Features

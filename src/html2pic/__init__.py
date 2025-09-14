@@ -26,7 +26,7 @@ from .warnings_system import (
     TranslationWarning, ParsingWarning
 )
 
-__version__ = "0.1.2"
+__version__ = "0.1.3"
 __all__ = [
     "Html2Pic", "Html2PicError", "ParseError", "RenderError",
     "get_warning_collector", "reset_warnings", "WarningCategory",

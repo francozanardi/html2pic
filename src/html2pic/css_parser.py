@@ -203,26 +203,66 @@ class CssParser:
         }
     
     def _parse_border_shorthand(self, value: str) -> Dict[str, str]:
-        """Parse border shorthand like '1px solid black'."""
-        parts = value.split()
+        """Parse border shorthand like '1px solid black' or '2px solid rgba(255, 0, 0, 0.5)'."""
         declarations = {}
-        
+
+        # Split by spaces but preserve function calls like rgba()
+        parts = self._split_preserving_functions(value)
+
         for part in parts:
             part = part.strip()
             if not part:
                 continue
-                
+
             # Check if it's a width (ends with px, em, etc.)
             if any(part.endswith(unit) for unit in ['px', 'em', 'rem', '%']):
                 declarations['border-width'] = part
             # Check if it's a style
             elif part in ['solid', 'dashed', 'dotted', 'none']:
                 declarations['border-style'] = part
-            # Assume it's a color
+            # Assume it's a color (including rgba(), rgb(), etc.)
             else:
                 declarations['border-color'] = part
-        
+
         return declarations
+
+    def _split_preserving_functions(self, value: str) -> List[str]:
+        """
+        Split a CSS value by spaces while preserving function calls like rgba().
+
+        Examples:
+        - '2px solid black' -> ['2px', 'solid', 'black']
+        - '2px solid rgba(255, 0, 0, 0.5)' -> ['2px', 'solid', 'rgba(255, 0, 0, 0.5)']
+        """
+        parts = []
+        current_part = ''
+        paren_depth = 0
+
+        i = 0
+        while i < len(value):
+            char = value[i]
+
+            if char == '(':
+                paren_depth += 1
+                current_part += char
+            elif char == ')':
+                paren_depth -= 1
+                current_part += char
+            elif char == ' ' and paren_depth == 0:
+                # Space outside of parentheses - end current part
+                if current_part.strip():
+                    parts.append(current_part.strip())
+                current_part = ''
+            else:
+                current_part += char
+
+            i += 1
+
+        # Add the last part
+        if current_part.strip():
+            parts.append(current_part.strip())
+
+        return parts
     
     def _calculate_specificity(self, selector: str) -> int:
         """

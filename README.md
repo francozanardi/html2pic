@@ -94,19 +94,21 @@ html2pic works by translating HTML + CSS concepts to PicTex builders:
 
 ### CSS Layout
 - `display: flex` with `flex-direction: row|column`
+- `display: none` for hiding elements completely
 - `justify-content`: `flex-start`, `center`, `flex-end`, `space-between`, `space-around`, `space-evenly`
 - `align-items`: `flex-start`, `center`, `flex-end`, `stretch`
 - `gap` for spacing between flex items
 
-### CSS Box Model  
+### CSS Box Model
 - `width`, `height` (px, %, auto, fit-content, fill-available)
 - `padding`, `margin` (shorthand and individual sides)
 - `border` with width, style (solid, dashed, dotted), and color
-- `border-radius` (px and %)
-- `background-color` (solid colors and linear gradients)
+- `border-radius` (px and %) with full individual corner support
+  - Individual properties: `border-top-left-radius`, `border-top-right-radius`, `border-bottom-left-radius`, `border-bottom-right-radius`
+- `background-color` (solid colors, linear gradients, and RGBA with alpha channel)
 - `background-image` (url() and linear-gradient())
 - `background-size` (cover, contain, tile for images)
-- `box-shadow` (offset-x, offset-y, blur-radius, color)
+- `box-shadow` (offset-x, offset-y, blur-radius, color with RGBA support)
 
 ### CSS Typography
 - `font-family`, `font-size`, `font-weight`, `font-style`
@@ -249,7 +251,99 @@ image = renderer.render()
 image.save("output.png")
 ```
 
-![Quick Start Result](examples/01_quick_start_output.png)
+![Quick Start Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/01_quick_start_output.png)
+
+### Individual Border-Radius Properties
+Showcase different corner radius values:
+
+```python
+html = '''
+<div class="card-container">
+    <div class="rounded-card">Individual Corner Radii</div>
+</div>
+'''
+
+css = '''
+.card-container {
+    padding: 20px;
+    background-color: #f5f5f5;
+}
+
+.rounded-card {
+    width: 300px;
+    height: 150px;
+    background-color: #e1f5fe;
+    padding: 20px;
+    border: 3px solid #0277bd;
+
+    /* Individual corner border-radius properties */
+    border-top-left-radius: 5px;
+    border-top-right-radius: 20px;
+    border-bottom-right-radius: 40px;
+    border-bottom-left-radius: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    color: #01579b;
+}
+'''
+
+renderer = Html2Pic(html, css)
+image = renderer.render()
+image.save("border_radius_example.png")
+```
+
+![Individual Border-Radius Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/border_radius_example.png)
+
+### Alpha Channel Colors and Display None
+Advanced styling with transparency and hidden elements:
+
+```python
+html = '''
+<div class="container">
+    <div class="visible-card">Visible Card</div>
+    <div class="hidden-card">This won't appear</div>
+    <div class="transparent-card">Semi-transparent Card</div>
+</div>
+'''
+
+css = '''
+.container {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    padding: 20px;
+}
+
+.visible-card {
+    background-color: rgba(76, 175, 80, 0.9);
+    padding: 15px;
+    border-radius: 8px;
+    color: white;
+}
+
+.hidden-card {
+    background-color: red;
+    padding: 15px;
+    display: none; /* This element won't be rendered at all */
+}
+
+.transparent-card {
+    background-color: rgba(33, 150, 243, 0.3); /* Semi-transparent blue */
+    padding: 15px;
+    border-radius: 8px;
+    border: 2px solid rgba(33, 150, 243, 0.8);
+}
+'''
+
+renderer = Html2Pic(html, css)
+image = renderer.render()
+image.save("advanced_styling_example.png")
+```
+
+![Advanced Styling Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/advanced_styling_example.png)
 
 ### Flexbox Card Layout
 Social media style user card with horizontal layout:
@@ -297,17 +391,17 @@ css = '''
 '''
 ```
 
-![Flexbox Card Result](examples/02_flexbox_card_output.png)
+![Flexbox Card Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/02_flexbox_card_output.png)
 
 ### Advanced Visual Effects
 Shadows, positioning, and advanced styling features:
 
-![Shadows and Effects Result](examples/04_shadows_and_effects_output.png)
+![Shadows and Effects Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/04_shadows_and_effects_output.png)
 
 ### Background Images  
 Background image support with different sizing modes:
 
-![Background Images Result](examples/05_background_images_output.png)
+![Background Images Result](https://raw.githubusercontent.com/francozanardi/html2pic/main/examples/05_background_images_output.png)
 
 **Complete examples** with full source code are available in the [`examples/`](examples/) directory.
 
