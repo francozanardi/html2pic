@@ -261,15 +261,18 @@ class StyleEngine:
     def _normalize_display(self, display_value: str) -> str:
         """
         Normalize display property to values we understand.
-        
+
         Maps various CSS display values to our internal system:
+        - none -> none (element not rendered)
         - flex -> flex
-        - block, div -> block  
+        - block, div -> block
         - inline, span -> inline
         """
         display_value = display_value.strip().lower()
-        
-        if display_value in ['flex']:
+
+        if display_value in ['none']:
+            return 'none'
+        elif display_value in ['flex']:
             return 'flex'
         elif display_value in ['block', 'div']:
             return 'block'

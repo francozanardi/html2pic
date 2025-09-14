@@ -109,14 +109,20 @@ class PicTexTranslator:
     def _create_element_builder(self, node: DOMNode) -> Optional[Element]:
         """
         Create a PicTex builder from an HTML element node.
-        
+
         Strategy:
-        1. Determine builder type based on tag and display property
-        2. Create the builder
-        3. Apply styling
-        4. Add children
+        1. Check if element should be rendered (display: none)
+        2. Determine builder type based on tag and display property
+        3. Create the builder
+        4. Apply styling
+        5. Add children
         """
         styles = node.computed_styles
+
+        # Skip elements with display: none
+        display = styles.get('display', 'block')
+        if display == 'none':
+            return None
         
         # Determine builder type
         builder = self._determine_builder_type(node)
