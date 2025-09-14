@@ -142,6 +142,10 @@ DEFAULT_STYLES = {
     'border-style': 'solid',
     'border-color': 'black',
     'border-radius': '0px',
+    'border-top-left-radius': '0px',
+    'border-top-right-radius': '0px',
+    'border-bottom-left-radius': '0px',
+    'border-bottom-right-radius': '0px',
     
     # Visual
     'background-color': 'transparent',

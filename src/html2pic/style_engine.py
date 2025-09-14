@@ -183,7 +183,8 @@ class StyleEngine:
         length_properties = [
             'width', 'height', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
             'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
-            'border-width', 'border-radius', 'gap'
+            'border-width', 'border-radius', 'border-top-left-radius', 'border-top-right-radius',
+            'border-bottom-left-radius', 'border-bottom-right-radius', 'gap'
         ]
         
         for prop in length_properties:
@@ -341,7 +342,8 @@ class StyleEngine:
         length_properties = [
             'width', 'height', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
             'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
-            'border-width', 'border-radius', 'font-size', 'gap', 'left', 'top'
+            'border-width', 'border-radius', 'border-top-left-radius', 'border-top-right-radius',
+            'border-bottom-left-radius', 'border-bottom-right-radius', 'font-size', 'gap', 'left', 'top'
         ]
         
         if property_name in length_properties and value not in ['auto', 'none', 'inherit', 'initial']:

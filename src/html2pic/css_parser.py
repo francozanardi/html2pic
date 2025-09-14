@@ -267,6 +267,7 @@ class CssParser:
             'width', 'height', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
             'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
             'border', 'border-width', 'border-style', 'border-color', 'border-radius',
+            'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
             # Visual
             'background-color', 'background-image', 'background-size', 'box-shadow', 'text-shadow',
             # Typography
@@ -280,7 +281,6 @@ class CssParser:
         partially_supported = {
             'background': 'Use background-color or background-image instead',
             'font': 'Use individual font properties instead',
-            'border-radius': 'Percentage values supported, individual corners not yet',
             'right': 'Only left/top positioning supported with position absolute',
             'bottom': 'Only left/top positioning supported with position absolute',
         }

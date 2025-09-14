@@ -273,12 +273,10 @@ class PicTexTranslator:
                 pictex_style
             )
         
-        # Border radius
-        border_radius = styles.get('border-radius', '0px')
-        if border_radius.endswith('px') and float(border_radius[:-2]) > 0:
-            builder = builder.border_radius(float(border_radius[:-2]))
-        elif border_radius.endswith('%'):
-            builder = builder.border_radius(border_radius)
+        # Border radius - support both shorthand and individual corner properties
+        border_radius_values = self._get_border_radius_values(styles)
+        if border_radius_values:
+            builder = builder.border_radius(*border_radius_values)
         
         # Box shadows
         box_shadow = styles.get('box-shadow', 'none')
@@ -972,3 +970,81 @@ class PicTexTranslator:
         
         # No percentage, just return the color
         return part, None
+
+    def _get_border_radius_values(self, styles: Dict[str, Any]) -> Optional[List[Union[float, str]]]:
+        """
+        Get border radius values from styles, supporting both shorthand and individual corner properties.
+
+        Priority:
+        1. Individual corner properties (border-top-left-radius, etc.)
+        2. Shorthand property (border-radius)
+
+        Args:
+            styles: Computed styles dictionary
+
+        Returns:
+            List of 4 values [top_left, top_right, bottom_right, bottom_left] for PicTex or None if no radius is set
+        """
+        # Get individual corner values
+        top_left = styles.get('border-top-left-radius', '0px')
+        top_right = styles.get('border-top-right-radius', '0px')
+        bottom_right = styles.get('border-bottom-right-radius', '0px')
+        bottom_left = styles.get('border-bottom-left-radius', '0px')
+
+        # Check if any individual corner is set (not default)
+        has_individual = any(
+            val != '0px' for val in [top_left, top_right, bottom_right, bottom_left]
+        )
+
+        if not has_individual:
+            # Check shorthand property
+            border_radius = styles.get('border-radius', '0px')
+            if border_radius == '0px':
+                return None
+            # Apply shorthand to all corners
+            top_left = top_right = bottom_right = bottom_left = border_radius
+
+        # Convert each corner to PicTex format
+        try:
+            tl_value = self._parse_border_radius_value(top_left)
+            tr_value = self._parse_border_radius_value(top_right)
+            br_value = self._parse_border_radius_value(bottom_right)
+            bl_value = self._parse_border_radius_value(bottom_left)
+
+            # Return list of values for border_radius(*args)
+            return [tl_value, tr_value, br_value, bl_value]
+
+        except Exception as e:
+            self.warnings.warn_style_not_applied(
+                'border-radius', f'{top_left}, {top_right}, {bottom_right}, {bottom_left}', 'element',
+                f'Failed to create border radius: {e}'
+            )
+            return None
+
+    def _parse_border_radius_value(self, value: str) -> Union[float, str]:
+        """
+        Parse a single border radius value for PicTex.
+
+        Supports:
+        - px values: "10px" -> 10.0
+        - % values: "50%" -> "50%"
+
+        Args:
+            value: CSS border radius value (e.g., "10px", "50%")
+
+        Returns:
+            float for px values, str for percentage values
+        """
+        value = value.strip()
+
+        if value.endswith('px'):
+            try:
+                px_value = float(value[:-2])
+                return px_value
+            except ValueError:
+                pass
+        elif value.endswith('%'):
+            return value  # Return percentage as string
+
+        # Default to 0.0 if parsing fails
+        return 0.0
