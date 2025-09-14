@@ -436,12 +436,10 @@ class StyleEngine:
             if alpha <= 0.01:  # Allow for floating point precision issues
                 return 'transparent'
             
+            a = int(alpha * 255)
             # Convert to hex format
-            hex_color = f'#{r:02x}{g:02x}{b:02x}'
+            hex_color = f'#{r:02x}{g:02x}{b:02x}{a:02x}'
             
-            # If alpha is less than 1, we could add alpha to hex (RGBA hex)
-            # But PicTex might not support it, so for now we ignore partial transparency
-            # and just return the RGB part
             return hex_color
             
         except (ValueError, IndexError) as e:
