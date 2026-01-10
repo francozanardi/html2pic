@@ -9,6 +9,7 @@ from .shorthand_expander import ShorthandExpander
 from ..fonts import FontFace, FontRegistry, FontSrcParser
 from ..warnings import get_warning_collector
 from ..exceptions import ParseError
+from ..styiling import DEFAULT_STYLES
 
 
 class CssParser:
