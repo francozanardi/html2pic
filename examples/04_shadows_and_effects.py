@@ -1,11 +1,10 @@
 """
-Advanced Effects: Shadows, Background Images, and Positioning
+Advanced Effects: Shadows and Positioning
 """
 
 import sys
 import os
 
-# Fix encoding for Windows console
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -28,7 +27,6 @@ html = '''
 css = '''
 .showcase {
     width: 500px;
-    height: 350px;
     background-color: #667eea;
     padding: 30px;
     border-radius: 15px;
@@ -48,14 +46,14 @@ css = '''
     background-color: white;
     padding: 25px;
     border-radius: 12px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
     margin-top: 20px;
 }
 
 .feature-box h2 {
     color: #2c3e50;
     margin-bottom: 10px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .feature-box p {
@@ -73,8 +71,8 @@ css = '''
     border-radius: 20px;
     font-weight: bold;
     font-size: 14px;
-    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 8px rgba(231, 76, 60, 0.4);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
 }
 '''
 
@@ -83,5 +81,5 @@ if __name__ == "__main__":
     image = renderer.render()
     image.save("04_shadows_and_effects_output.png")
     
-    print("✅ Shadows and effects example rendered successfully!")
-    print("📸 Check '04_shadows_and_effects_output.png' for the result")
+    print("Shadows and effects example rendered successfully!")
+    print("Output saved to '04_shadows_and_effects_output.png'")

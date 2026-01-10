@@ -25,7 +25,11 @@ class ElementFactory:
         if self._is_flex_container(node):
             return self._create_flex_container(node)
         
-        return Row()
+        if self._is_inline(node):
+            return Row()
+
+        return Column()
+    
     
     def _create_image(self, node: DOMNode) -> Optional[Image]:
         src = node.attributes.get('src', '')
@@ -43,6 +47,13 @@ class ElementFactory:
     def _is_flex_container(self, node: DOMNode) -> bool:
         return node.computed_styles.get('display') == 'flex'
     
+    def _is_inline(self, node: DOMNode) -> bool:
+        display = node.computed_styles.get('display', DEFAULT_STYLES['display'])
+        if display == 'inline':
+            return True
+        return node.tag in self.INLINE_TAGS
+    
     def create_text(self, content: str) -> Text:
         """Create a Text element."""
         return Text(content)
+

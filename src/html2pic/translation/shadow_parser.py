@@ -1,11 +1,12 @@
 from typing import List, Optional
 from pictex import Shadow, SolidColor
-
+from ..styling import ColorNormalizer
 
 class ShadowParser:
     
     def __init__(self, warning_collector=None):
         self.warnings = warning_collector
+        self._color_normalizer = ColorNormalizer()
     
     def parse_shadows(self, shadow_str: str, include_spread: bool = True) -> List[Shadow]:
         shadows = []
@@ -72,8 +73,13 @@ class ShadowParser:
             color = ' '.join(color_parts)
         
         try:
-            color_obj = SolidColor.from_str(color)
-            return Shadow(offset_x, offset_y, blur, spread, color_obj)
+            normalized_color = self._color_normalizer.normalize(color)
+            color_obj = SolidColor.from_str(normalized_color)
+            return Shadow(
+                offset=(offset_x, offset_y),
+                blur_radius=blur,
+                color=color_obj
+            )
         except Exception as e:
             if self.warnings:
                 self.warnings.warn_unexpected_error(f"Failed to parse shadow '{shadow_str}': {e}")

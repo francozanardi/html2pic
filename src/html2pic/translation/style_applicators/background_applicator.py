@@ -57,15 +57,25 @@ class BackgroundApplicator(StyleApplicator):
                 'to left': ((1.0, 0.5), (0.0, 0.5)),
                 'to bottom': ((0.5, 0.0), (0.5, 1.0)),
                 'to top': ((0.5, 1.0), (0.5, 0.0)),
+                'to bottom right': ((0.0, 0.0), (1.0, 1.0)),
+                'to bottom left': ((1.0, 0.0), (0.0, 1.0)),
+                'to top right': ((0.0, 1.0), (1.0, 0.0)),
+                'to top left': ((1.0, 1.0), (0.0, 0.0)),
             }
             
             start_point = (0.5, 0.0)
             end_point = (0.5, 1.0)
             color_parts = parts
             
-            if parts and parts[0].strip().lower() in direction_mapping:
-                start_point, end_point = direction_mapping[parts[0].strip().lower()]
-                color_parts = parts[1:]
+            if parts:
+                first_part = parts[0].strip().lower()
+                
+                if first_part in direction_mapping:
+                    start_point, end_point = direction_mapping[first_part]
+                    color_parts = parts[1:]
+                elif first_part.endswith('deg'):
+                    start_point, end_point = self._angle_to_points(first_part)
+                    color_parts = parts[1:]
             
             colors = []
             stops = []
@@ -83,6 +93,22 @@ class BackgroundApplicator(StyleApplicator):
         except Exception as e:
             self.warnings.warn_unexpected_error(f"Failed to parse gradient '{gradient_str}': {e}")
         return None
+    
+    def _angle_to_points(self, angle_str: str) -> Tuple[Tuple[float, float], Tuple[float, float]]:
+        import math
+        try:
+            angle = float(angle_str[:-3])
+            rad = math.radians(angle - 90)
+            
+            x = 0.5 + 0.5 * math.cos(rad)
+            y = 0.5 + 0.5 * math.sin(rad)
+            
+            start_x = 0.5 - 0.5 * math.cos(rad)
+            start_y = 0.5 - 0.5 * math.sin(rad)
+            
+            return ((start_x, start_y), (x, y))
+        except:
+            return ((0.5, 0.0), (0.5, 1.0))
     
     def _split_gradient_parts(self, content: str) -> List[str]:
         parts = []

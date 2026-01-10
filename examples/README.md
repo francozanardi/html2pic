@@ -1,32 +1,33 @@
 # html2pic Examples
 
-This directory contains practical examples demonstrating html2pic functionality.
+Practical examples demonstrating html2pic functionality.
 
-## Running the Examples
+## Running Examples
 
 Each example is a standalone Python script. Run them from this directory:
 
 ```bash
 python 01_quick_start.py
 python 02_flexbox_card.py
+python 03_typography_showcase.py
 python 04_shadows_and_effects.py
 python 05_background_images.py
 ```
 
 ## Examples Overview
 
-### 1. Quick Start (`01_quick_start.py`)
+### 01 - Quick Start
 **Basic card layout demonstrating core functionality**
 
 ![Quick Start Example](01_quick_start_output.png)
 
 Simple flexbox card with centered content, demonstrating:
 - Basic HTML structure
-- Flexbox layout 
+- Flexbox layout
 - Padding and margins
 - Colors and typography
 
-### 2. Flexbox Card (`02_flexbox_card.py`)
+### 02 - Flexbox Card
 **User card with avatar and information**
 
 ![Flexbox Card Example](02_flexbox_card_output.png)
@@ -37,7 +38,18 @@ Social media style user card showing:
 - Border radius for circular avatar
 - Different text styles and colors
 
-### 3. Shadows and Effects (`04_shadows_and_effects.py`)
+### 03 - Typography Showcase
+**Advanced text styling**
+
+![Typography Example](03_typography_showcase_output.png)
+
+Demonstrates various typography features:
+- Multiple font sizes and weights
+- Text alignment
+- Line height
+- Text decorations
+
+### 04 - Shadows and Effects
 **Advanced visual effects**
 
 ![Shadows and Effects Example](04_shadows_and_effects_output.png)
@@ -48,7 +60,7 @@ Showcase of advanced styling features:
 - Absolute positioning
 - Multiple shadow effects
 
-### 4. Background Images (`05_background_images.py`)
+### 05 - Background Images
 **Background image handling**
 
 ![Background Images Example](05_background_images_output.png)
@@ -59,11 +71,6 @@ Demonstrates background-image support:
 - Fallback to background colors
 - Text overlay on backgrounds
 
-## Image Results
-
-All examples generate PNG output files that you can view to see the actual rendered results. The images showcase html2pic's ability to create high-quality graphics from HTML and CSS.
-
 ## Notes
 
-- Examples include encoding fixes for Windows console output
-- Warning messages show css properties with limited support
+All examples generate PNG output files that showcase html2pic's ability to create high-quality graphics from HTML and CSS. For complete documentation, see the main [README](../README.md).

@@ -1,11 +1,10 @@
 """
-Typography Showcase Example from README
+Typography Showcase Example
 """
 
 import sys
 import os
 
-# Fix encoding for Windows console
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -54,6 +53,5 @@ if __name__ == "__main__":
     image = renderer.render()
     image.save("03_typography_showcase_output.png")
     
-    print("✅ Typography showcase example rendered successfully!")
-    print("📸 Check '03_typography_showcase_output.png' for the result")
-    print("🌈 Gradient background is now fully supported!")
+    print("Typography showcase example rendered successfully!")
+    print("Output saved to '03_typography_showcase_output.png'")

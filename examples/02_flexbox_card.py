@@ -1,11 +1,10 @@
 """
-Flexbox Card Layout Example from README
+Flexbox Card Layout Example
 """
 
 import sys
 import os
 
-# Fix encoding for Windows console
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -60,5 +59,5 @@ if __name__ == "__main__":
     image = renderer.render()
     image.save("02_flexbox_card_output.png")
     
-    print("✅ Flexbox card example rendered successfully!")
-    print("📸 Check '02_flexbox_card_output.png' for the result")
+    print("Flexbox card example rendered successfully!")
+    print("Output saved to '02_flexbox_card_output.png'")

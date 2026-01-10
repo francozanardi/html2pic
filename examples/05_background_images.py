@@ -1,11 +1,10 @@
 """
-Background Images Example - Demonstrates background-image support
+Background Images Example
 """
 
 import sys
 import os
 
-# Fix encoding for Windows console
 if sys.platform == 'win32':
     import io
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
@@ -64,7 +63,7 @@ css = '''
 .tile-demo {
     background-color: #e74c3c;
     background-image: url('background.webp');
-    background-size: auto;
+    background-size: tile;
 }
 
 .bg-demo h3 {
@@ -75,7 +74,6 @@ css = '''
 .bg-demo p {
     margin: 0;
     font-size: 14px;
-    opacity: 0.9;
 }
 '''
 
@@ -84,6 +82,5 @@ if __name__ == "__main__":
     image = renderer.render()
     image.save("05_background_images_output.png")
     
-    print("✅ Background images example rendered successfully!")
-    print("📸 Check '05_background_images_output.png' for the result")
-    print("ℹ️  Background images are commented out - uncomment and add real image paths to test")
+    print("Background images example rendered successfully!")
+    print("Output saved to '05_background_images_output.png'")
