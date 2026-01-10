@@ -85,5 +85,3 @@ if __name__ == "__main__":
     
     print("✅ Shadows and effects example rendered successfully!")
     print("📸 Check '04_shadows_and_effects_output.png' for the result")
-    
-    renderer.print_warnings()

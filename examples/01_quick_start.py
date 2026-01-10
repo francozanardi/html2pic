@@ -55,6 +55,3 @@ if __name__ == "__main__":
     
     print("✅ Quick start example rendered successfully!")
     print("📸 Check '01_quick_start_output.png' for the result")
-    
-    # Print any warnings
-    renderer.print_warnings()

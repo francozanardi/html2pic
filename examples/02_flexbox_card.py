@@ -62,5 +62,3 @@ if __name__ == "__main__":
     
     print("✅ Flexbox card example rendered successfully!")
     print("📸 Check '02_flexbox_card_output.png' for the result")
-    
-    renderer.print_warnings()

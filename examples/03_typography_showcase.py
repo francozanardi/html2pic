@@ -57,5 +57,3 @@ if __name__ == "__main__":
     print("✅ Typography showcase example rendered successfully!")
     print("📸 Check '03_typography_showcase_output.png' for the result")
     print("🌈 Gradient background is now fully supported!")
-    
-    renderer.print_warnings()

@@ -87,5 +87,3 @@ if __name__ == "__main__":
     print("✅ Background images example rendered successfully!")
     print("📸 Check '05_background_images_output.png' for the result")
     print("ℹ️  Background images are commented out - uncomment and add real image paths to test")
-    
-    renderer.print_warnings()
