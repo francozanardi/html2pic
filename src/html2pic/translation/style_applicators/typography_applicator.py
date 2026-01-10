@@ -1,4 +1,3 @@
-"""Typography style application."""
 from typing import Dict, Any, List, Optional
 
 from pictex import Element, SolidColor
@@ -7,13 +6,14 @@ from .base_applicator import StyleApplicator
 from ...fonts import FontRegistry
 from ...warnings import get_warning_collector
 from ...styling.default_styles import DEFAULT_STYLES
+from ..shadow_parser import ShadowParser
 
 class TypographyApplicator(StyleApplicator):
-    """Applies typography styles (font, color, text-align, etc.)."""
     
     def __init__(self, font_registry: FontRegistry = None):
         self.font_registry = font_registry
         self.warnings = get_warning_collector()
+        self.shadow_parser = ShadowParser(self.warnings)
     
     def apply(self, builder: Element, styles: Dict[str, Any]) -> Element:
         builder = self._apply_font_family(builder, styles)
@@ -103,12 +103,11 @@ class TypographyApplicator(StyleApplicator):
     
     def _apply_text_wrap(self, builder: Element, styles: Dict[str, Any]) -> Element:
         text_wrap = styles.get('text-wrap', DEFAULT_STYLES['text-wrap'])
-        # Map CSS values to pictex TextWrap values
         wrap_mapping = {
             'wrap': 'normal',
             'normal': 'normal',
             'nowrap': 'nowrap',
-            'balance': 'normal',  # fallback
+            'balance': 'normal',
         }
         if text_wrap in wrap_mapping:
             builder = builder.text_wrap(wrap_mapping[text_wrap])
@@ -117,17 +116,14 @@ class TypographyApplicator(StyleApplicator):
     def _apply_text_shadow(self, builder: Element, styles: Dict[str, Any]) -> Element:
         text_shadow = styles.get('text-shadow', DEFAULT_STYLES['text-shadow'])
         if text_shadow != 'none':
-            shadow = self._parse_text_shadow(text_shadow)
-            if shadow:
-                builder = builder.text_shadows(*shadow)
+            shadows = self.shadow_parser.parse_shadows(text_shadow, include_spread=False)
+            if shadows:
+                builder = builder.text_shadows(*shadows)
         return builder
-    
-    def _parse_text_shadow(self, shadow_str: str) -> Optional[List]:
-        # Simplified text shadow parsing
-        return None
     
     def _normalize_weight(self, weight: str) -> str:
         if weight.isdigit():
             return weight
         weight_map = {'bold': '700', 'bolder': '700', 'normal': '400', 'lighter': '300'}
         return weight_map.get(weight, DEFAULT_STYLES['font-weight'])
+
