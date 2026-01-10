@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "html2pic"
-version = "0.1.3"
+version = "0.2.0"
 description = "Convert HTML + CSS to images without a browser"
 authors = [
     {name = "Franco Zanardi", email = "francozanardi97@gmail.com"},
@@ -30,7 +30,7 @@ classifiers = [
 ]
 
 dependencies = [
-    "pictex",
+    "pictex>=2.0.0",
     "beautifulsoup4>=4.9.0",
     "tinycss2>=1.1.0",
 ]

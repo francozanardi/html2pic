@@ -123,13 +123,26 @@ DEFAULT_STYLES = {
     # Layout
     'display': 'block',  # We'll map this to Row/Column/Text
     'flex-direction': 'row',
-    'justify-content': 'flex-start',  # Maps to horizontal_distribution/vertical_distribution
-    'align-items': 'stretch',  # Maps to vertical_align/horizontal_align
+    'justify-content': 'flex-start',  # Maps to justify_content
+    'align-items': 'stretch',  # Maps to align_items
     'gap': '0px',
+    
+    # Flex item properties (PicTex 2.0)
+    'flex-grow': 'auto',
+    'flex-shrink': 'auto',
+    'align-self': 'auto',
+    'flex-wrap': 'nowrap',
     
     # Box model
     'width': 'auto',
-    'height': 'auto', 
+    'height': 'auto',
+    # Size constraints (PicTex 2.0)
+    'min-width': 'auto',
+    'max-width': 'none',
+    'min-height': 'auto',
+    'max-height': 'none',
+    'aspect-ratio': 'auto',
+    # Padding and margin
     'padding-top': '0px',
     'padding-right': '0px',
     'padding-bottom': '0px',
@@ -164,12 +177,15 @@ DEFAULT_STYLES = {
     'text-decoration': 'none',
     'text-wrap': 'wrap',
     
-    # Positioning (for future use)
+    # Positioning (PicTex 2.0: full support for all position types)
     'position': 'static',
     'top': 'auto',
     'right': 'auto', 
     'bottom': 'auto',
     'left': 'auto',
+    
+    # Transforms (PicTex 2.0: translate only)
+    'transform': 'none',
 }
 
 

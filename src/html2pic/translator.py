@@ -209,6 +209,17 @@ class PicTexTranslator:
         if width != 'auto' or height != 'auto':
             builder = self._apply_size(builder, width, height)
         
+        # PicTex 2.0: Size constraints (min/max width/height)
+        builder = self._apply_size_constraints(builder, styles)
+        
+        # PicTex 2.0: Aspect ratio
+        aspect_ratio = styles.get('aspect-ratio', 'auto')
+        if aspect_ratio != 'auto':
+            builder = self._apply_aspect_ratio(builder, aspect_ratio)
+        
+        # PicTex 2.0: Flex item properties (flex-grow, flex-shrink, align-self)
+        builder = self._apply_flex_item_styles(builder, styles)
+        
         # Box model - padding
         padding = self._get_box_values(styles, 'padding')
         if any(float(p.rstrip('px')) > 0 for p in padding if p.endswith('px')):
@@ -298,8 +309,11 @@ class PicTexTranslator:
         # Typography (for Text elements or containers that might contain text)
         builder = self._apply_text_styles(builder, styles)
         
-        # Positioning (absolute only)
+        # Positioning
         builder = self._apply_positioning(builder, styles)
+        
+        # Transforms (PicTex 2.0: translate for anchor-based positioning)
+        builder = self._apply_transform(builder, styles)
         
         return builder
     
@@ -314,7 +328,7 @@ class PicTexTranslator:
                 width_value = float(width[:-2])
             elif width.endswith('%'):
                 width_value = width
-            elif width in ['fit-content', 'fill-available', 'fit-background-image']:
+            elif width in ['fit-content', 'fit-background-image']:
                 width_value = width
         
         # Convert height
@@ -323,11 +337,111 @@ class PicTexTranslator:
                 height_value = float(height[:-2])
             elif height.endswith('%'):
                 height_value = height
-            elif height in ['fit-content', 'fill-available', 'fit-background-image']:
+            elif height in ['fit-content', 'fit-background-image']:
                 height_value = height
         
         if width_value is not None or height_value is not None:
-            return builder.size(width_value, height_value)
+            builder = builder.size(width_value, height_value)
+        
+        return builder
+    
+    def _apply_size_constraints(self, builder: Element, styles: Dict[str, Any]) -> Element:
+        """Apply min/max width and height constraints (PicTex 2.0)."""
+        # Min width
+        min_width = styles.get('min-width', 'auto')
+        if min_width != 'auto':
+            value = self._parse_size_constraint_value(min_width)
+            if value is not None:
+                builder = builder.min_width(value)
+        
+        # Max width
+        max_width = styles.get('max-width', 'none')
+        if max_width != 'none':
+            value = self._parse_size_constraint_value(max_width)
+            if value is not None:
+                builder = builder.max_width(value)
+        
+        # Min height
+        min_height = styles.get('min-height', 'auto')
+        if min_height != 'auto':
+            value = self._parse_size_constraint_value(min_height)
+            if value is not None:
+                builder = builder.min_height(value)
+        
+        # Max height
+        max_height = styles.get('max-height', 'none')
+        if max_height != 'none':
+            value = self._parse_size_constraint_value(max_height)
+            if value is not None:
+                builder = builder.max_height(value)
+        
+        return builder
+    
+    def _parse_size_constraint_value(self, value: str) -> Union[float, str, None]:
+        """Parse a CSS size constraint value to PicTex format."""
+        if value in ['auto', 'none']:
+            return None
+        if value.endswith('px'):
+            return float(value[:-2])
+        elif value.endswith('%'):
+            return value  # PicTex supports percentage strings
+        elif value.endswith('em'):
+            return float(value[:-2]) * 16
+        elif value.endswith('rem'):
+            return float(value[:-3]) * 16
+        return None
+    
+    def _apply_aspect_ratio(self, builder: Element, aspect_ratio: str) -> Element:
+        """Apply aspect ratio (PicTex 2.0)."""
+        try:
+            # Handle ratio formats like "16/9" or "1.777"
+            if '/' in aspect_ratio:
+                parts = aspect_ratio.split('/')
+                ratio = float(parts[0].strip()) / float(parts[1].strip())
+            else:
+                ratio = float(aspect_ratio)
+            
+            builder = builder.aspect_ratio(ratio)
+        except (ValueError, ZeroDivisionError):
+            self.warnings.warn_style_not_applied(
+                'aspect-ratio', aspect_ratio, 'element',
+                f"Invalid aspect-ratio value. Expected format: '16/9' or '1.777'"
+            )
+        
+        return builder
+    
+    def _apply_flex_item_styles(self, builder: Element, styles: Dict[str, Any]) -> Element:
+        """Apply flex item properties (PicTex 2.0): flex-grow, flex-shrink, align-self."""
+        # flex-grow
+        flex_grow = styles.get('flex-grow', 'auto')
+        if flex_grow != 'auto' and flex_grow != '0':
+            try:
+                builder = builder.flex_grow(float(flex_grow))
+            except ValueError:
+                pass
+        
+        # flex-shrink  
+        flex_shrink = styles.get('flex-shrink', 'auto')
+        if flex_shrink != 'auto' and flex_shrink != '1':
+            try:
+                builder = builder.flex_shrink(float(flex_shrink))
+            except ValueError:
+                pass
+        
+        # align-self (override container's align-items for this element)
+        align_self = styles.get('align-self', 'auto')
+        if align_self != 'auto':
+            alignment_map = {
+                'flex-start': 'start',
+                'start': 'start',
+                'center': 'center',
+                'flex-end': 'end',
+                'end': 'end',
+                'stretch': 'stretch'
+            }
+            pictex_value = alignment_map.get(align_self)
+            if pictex_value:
+                builder = builder.align_self(pictex_value)
         
         return builder
     
@@ -358,47 +472,54 @@ class PicTexTranslator:
             align_items = styles.get('align-items', 'stretch')
             builder = self._apply_alignment(builder, align_items, 'horizontal')
         
+        # PicTex 2.0: flex-wrap for multi-line containers
+        flex_wrap = styles.get('flex-wrap', 'nowrap')
+        if flex_wrap != 'nowrap':
+            wrap_map = {
+                'wrap': 'wrap',
+                'wrap-reverse': 'wrap-reverse'
+            }
+            wrap_value = wrap_map.get(flex_wrap)
+            if wrap_value:
+                builder = builder.flex_wrap(wrap_value)
+        
         return builder
     
     def _apply_distribution(self, builder: Union[Row, Column], justify_value: str, axis: str) -> Union[Row, Column]:
-        """Apply justify-content CSS property to PicTex distribution."""
-        # Map CSS values to PicTex values
+        """Apply justify-content CSS property to PicTex justify_content (v2.0 API)."""
+        # PicTex 2.0: Use CSS-standard values with justify_content()
         distribution_map = {
-            'flex-start': 'left' if axis == 'horizontal' else 'top',
+            'flex-start': 'start',
+            'start': 'start',
             'center': 'center',
-            'flex-end': 'right' if axis == 'horizontal' else 'bottom',
+            'flex-end': 'end',
+            'end': 'end',
             'space-between': 'space-between',
             'space-around': 'space-around',
             'space-evenly': 'space-evenly'
         }
         
-        pictex_value = distribution_map.get(justify_value, 'left' if axis == 'horizontal' else 'top')
+        pictex_value = distribution_map.get(justify_value, 'start')
         
-        if axis == 'horizontal' and isinstance(builder, Row):
-            return builder.horizontal_distribution(pictex_value)
-        elif axis == 'vertical' and isinstance(builder, Column):
-            return builder.vertical_distribution(pictex_value)
-        
-        return builder
+        # PicTex 2.0: Both Row and Column use justify_content()
+        return builder.justify_content(pictex_value)
     
     def _apply_alignment(self, builder: Union[Row, Column], align_value: str, axis: str) -> Union[Row, Column]:
-        """Apply align-items CSS property to PicTex alignment."""
-        # Map CSS values to PicTex values
+        """Apply align-items CSS property to PicTex align_items (v2.0 API)."""
+        # PicTex 2.0: Use CSS-standard values with align_items()
         alignment_map = {
-            'flex-start': 'left' if axis == 'horizontal' else 'top',
+            'flex-start': 'start',
+            'start': 'start',
             'center': 'center',
-            'flex-end': 'right' if axis == 'horizontal' else 'bottom',
+            'flex-end': 'end',
+            'end': 'end',
             'stretch': 'stretch'
         }
         
         pictex_value = alignment_map.get(align_value, 'stretch')
         
-        if axis == 'vertical' and isinstance(builder, Row):
-            return builder.vertical_align(pictex_value)
-        elif axis == 'horizontal' and isinstance(builder, Column):
-            return builder.horizontal_align(pictex_value)
-        
-        return builder
+        # PicTex 2.0: Both Row and Column use align_items()
+        return builder.align_items(pictex_value)
     
     def _apply_text_styles(self, builder: Element, styles: Dict[str, Any]) -> Element:
         """Apply typography styles to a builder."""
@@ -482,32 +603,49 @@ class PicTexTranslator:
         return builder
     
     def _apply_positioning(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        """Apply CSS positioning (absolute only) to a builder."""
+        """Apply CSS positioning to a builder using PicTex 2.0 API.
+        
+        PicTex 2.0 supports:
+        - absolute_position(top=, right=, bottom=, left=): parent-relative positioning
+        - relative_position(top=, right=, bottom=, left=): offset from normal flow
+        - fixed_position(top=, right=, bottom=, left=): canvas-relative positioning
+        """
         position = styles.get('position', 'static')
         
+        # Get all inset values
+        left = styles.get('left', 'auto')
+        top = styles.get('top', 'auto')
+        right = styles.get('right', 'auto')
+        bottom = styles.get('bottom', 'auto')
+        
+        # Build kwargs for positioning methods
+        position_kwargs = {}
+        if top != 'auto':
+            position_kwargs['top'] = self._parse_position_value(top)
+        if right != 'auto':
+            position_kwargs['right'] = self._parse_position_value(right)
+        if bottom != 'auto':
+            position_kwargs['bottom'] = self._parse_position_value(bottom)
+        if left != 'auto':
+            position_kwargs['left'] = self._parse_position_value(left)
+        
         if position == 'absolute':
-            left = styles.get('left', 'auto')
-            top = styles.get('top', 'auto')
-            
-            # Only apply positioning if left or top are specified
-            if left != 'auto' or top != 'auto':
-                x_pos = self._parse_position_value(left) if left != 'auto' else 0
-                y_pos = self._parse_position_value(top) if top != 'auto' else 0
-                
-                # Use PicTex's absolute_position (which is actually relative to root canvas)
-                builder = builder.absolute_position(x_pos, y_pos)
+            # PicTex 2.0: absolute_position() is parent-relative with CSS-style insets
+            if position_kwargs:
+                builder = builder.absolute_position(**position_kwargs)
         elif position == 'relative':
-            # Warn that relative positioning is not supported
-            if any(styles.get(prop, 'auto') != 'auto' for prop in ['left', 'top', 'right', 'bottom']):
-                self.warnings.warn_style_not_applied(
-                    'position', 'relative', 'element', 
-                    'Relative positioning is not supported. Use absolute positioning with left/top instead.'
-                )
+            # PicTex 2.0: relative_position() for offsets from normal flow
+            if position_kwargs:
+                builder = builder.relative_position(**position_kwargs)
+        elif position == 'fixed':
+            # PicTex 2.0: fixed_position() for canvas-relative positioning
+            if position_kwargs:
+                builder = builder.fixed_position(**position_kwargs)
         elif position != 'static' and position != 'auto':
-            # Warn about other unsupported position values
+            # Warn about unsupported position values  
             self.warnings.warn_style_not_applied(
                 'position', position, 'element',
-                f"Position '{position}' is not supported. Only 'absolute' is supported."
+                f"Position '{position}' is not supported. Supported values: static, relative, absolute, fixed."
             )
         
         return builder
@@ -536,6 +674,139 @@ class PicTexTranslator:
             return float(value)
         except ValueError:
             return 0
+    
+    def _apply_transform(self, builder: Element, styles: Dict[str, Any]) -> Element:
+        """Apply CSS transform property (PicTex 2.0: translate only).
+        
+        Supports:
+        - transform: translate(x, y)
+        - transform: translate(x)  (y defaults to 0)
+        - transform: translateX(x)
+        - transform: translateY(y)
+        
+        Common use case for anchor-based centering:
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        """
+        transform = styles.get('transform', 'none')
+        
+        if transform == 'none' or not transform:
+            return builder
+        
+        transform = transform.strip().lower()
+        
+        # Parse translate functions
+        translate_x = None
+        translate_y = None
+        
+        # Check for translate(x, y) or translate(x)
+        if 'translate(' in transform:
+            translate_x, translate_y = self._parse_translate_function(transform, 'translate')
+        
+        # Check for translateX(x)
+        if 'translatex(' in transform:
+            x_val, _ = self._parse_translate_function(transform, 'translatex')
+            if x_val is not None:
+                translate_x = x_val
+        
+        # Check for translateY(y)
+        if 'translatey(' in transform:
+            _, y_val = self._parse_translate_function(transform, 'translatey')
+            if y_val is not None:
+                translate_y = y_val
+        
+        # Apply translate if we have values
+        if translate_x is not None or translate_y is not None:
+            kwargs = {}
+            if translate_x is not None:
+                kwargs['x'] = translate_x
+            if translate_y is not None:
+                kwargs['y'] = translate_y
+            
+            if kwargs:
+                builder = builder.translate(**kwargs)
+        
+        # Warn about unsupported transform functions
+        unsupported = ['rotate', 'scale', 'skew', 'matrix', 'perspective']
+        for func in unsupported:
+            if f'{func}(' in transform:
+                self.warnings.warn_style_not_applied(
+                    'transform', transform, 'element',
+                    f"Only translate() is supported. {func}() is not implemented."
+                )
+                break
+        
+        return builder
+    
+    def _parse_translate_function(self, transform: str, func_name: str) -> Tuple[Optional[str], Optional[str]]:
+        """Parse a translate function from a CSS transform string.
+        
+        Returns (x_value, y_value) tuple. Values can be None if not specified.
+        """
+        import re
+        
+        # Pattern to match the function and its arguments
+        pattern = rf'{func_name}\s*\(\s*([^)]+)\s*\)'
+        match = re.search(pattern, transform, re.IGNORECASE)
+        
+        if not match:
+            return None, None
+        
+        args = match.group(1)
+        
+        # Split by comma, handling potential spaces
+        parts = [p.strip() for p in args.split(',')]
+        
+        if func_name == 'translate':
+            # translate(x) or translate(x, y)
+            x_val = self._parse_transform_value(parts[0]) if len(parts) >= 1 else None
+            y_val = self._parse_transform_value(parts[1]) if len(parts) >= 2 else None
+            return x_val, y_val
+        elif func_name == 'translatex':
+            # translateX(x)
+            x_val = self._parse_transform_value(parts[0]) if len(parts) >= 1 else None
+            return x_val, None
+        elif func_name == 'translatey':
+            # translateY(y)
+            y_val = self._parse_transform_value(parts[0]) if len(parts) >= 1 else None
+            return None, y_val
+        
+        return None, None
+    
+    def _parse_transform_value(self, value: str) -> Optional[str]:
+        """Parse a transform value (px or %) to PicTex format."""
+        value = value.strip()
+        
+        if not value:
+            return None
+        
+        # Percentage values - keep as string
+        if value.endswith('%'):
+            return value
+        
+        # Pixel values - convert to float then back to string without 'px'
+        if value.endswith('px'):
+            try:
+                return str(float(value[:-2]))
+            except ValueError:
+                return None
+        
+        # em/rem - convert to pixels
+        if value.endswith('em'):
+            try:
+                return str(float(value[:-2]) * 16)
+            except ValueError:
+                return None
+        if value.endswith('rem'):
+            try:
+                return str(float(value[:-3]) * 16)
+            except ValueError:
+                return None
+        
+        # Plain number - assume pixels
+        try:
+            return str(float(value))
+        except ValueError:
+            return None
     
     def _add_children_to_container(self, container: Union[Row, Column], node: DOMNode) -> Union[Row, Column]:
         """Add child elements to a Row or Column container."""

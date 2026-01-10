@@ -95,12 +95,18 @@ html2pic works by translating HTML + CSS concepts to PicTex builders:
 ### CSS Layout
 - `display: flex` with `flex-direction: row|column`
 - `display: none` for hiding elements completely
-- `justify-content`: `flex-start`, `center`, `flex-end`, `space-between`, `space-around`, `space-evenly`
-- `align-items`: `flex-start`, `center`, `flex-end`, `stretch`
+- `justify-content`: `flex-start`, `start`, `center`, `flex-end`, `end`, `space-between`, `space-around`, `space-evenly`
+- `align-items`: `flex-start`, `start`, `center`, `flex-end`, `end`, `stretch`
+- `align-self`: Override container alignment for individual items
+- `flex-grow`: Control how elements grow to fill available space
+- `flex-shrink`: Control how elements shrink when space is limited
+- `flex-wrap`: Enable multi-line flex containers (`wrap`, `wrap-reverse`)
 - `gap` for spacing between flex items
 
 ### CSS Box Model
-- `width`, `height` (px, %, auto, fit-content, fill-available)
+- `width`, `height` (px, %, auto, fit-content)
+- `min-width`, `max-width`, `min-height`, `max-height` - Size constraints
+- `aspect-ratio` - Maintain element proportions (e.g., `16/9` or `1.777`)
 - `padding`, `margin` (shorthand and individual sides)
 - `border` with width, style (solid, dashed, dotted), and color
 - `border-radius` (px and %) with full individual corner support
@@ -193,8 +199,20 @@ background-image: linear-gradient(45deg, yellow, orange, red, purple);
 **Limitations**: Only linear gradients are supported. Radial and conic gradients are not yet implemented.
 
 ### CSS Positioning
-- `position: absolute` with `left` and `top` properties (px, %, em, rem)
-- **Limitation**: Only `left` and `top` are supported, not `right` or `bottom`
+- `position: static` (default flow)
+- `position: relative` with `top`, `right`, `bottom`, `left` offsets from normal position
+- `position: absolute` with `top`, `right`, `bottom`, `left` - Parent-relative positioning
+- `position: fixed` with `top`, `right`, `bottom`, `left` - Canvas-relative positioning
+- All values support px, %, em, rem units
+
+### CSS Transforms
+- `transform: translate(x, y)` - Move element by x/y offset
+- `transform: translate(x)` - Move element horizontally
+- `transform: translateX(x)` / `translateY(y)` - Individual axis
+- Supports px and % values (% is relative to element size)
+- Enables **anchor-based centering**: `top: 50%; left: 50%; transform: translate(-50%, -50%);`
+
+**Note:** Only `translate()` is supported. Other transforms (rotate, scale, skew) are not implemented.
 
 ### CSS At-Rules
 - `@font-face` declarations for custom font loading
@@ -428,7 +446,15 @@ The rendered images are PicTex `BitmapImage` or `VectorImage` objects with metho
 
 ## 🚧 Current Limitations  
 
-This is an early version focusing on core functionality. A lot of features are not yet supported.
+This library supports a subset of CSS. Notable unsupported features include:
+
+- **CSS Grid**: Use Flexbox layout instead
+- **CSS Transforms (partial)**: Only `translate()` is supported; `rotate()`, `scale()`, `skew()` are not implemented
+- **CSS Animations/Transitions**: No animation support
+- **Radial/Conic Gradients**: Only `linear-gradient` is supported
+- **Complex Selectors**: Descendant selectors (`div .class`), pseudo-classes (`:hover`, `:nth-child`), attribute selectors not supported
+- **Media Queries**: Responsive breakpoints not available
+- **Overflow/Scrolling**: No scroll containers
 
 ## 🤝 Contributing
 

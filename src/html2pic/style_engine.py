@@ -320,8 +320,10 @@ class StyleEngine:
         valid_values = {
             'display': ['none', 'block', 'inline', 'inline-block', 'flex'],
             'flex-direction': ['row', 'column', 'row-reverse', 'column-reverse'],
-            'justify-content': ['flex-start', 'center', 'flex-end', 'space-between', 'space-around', 'space-evenly'],
-            'align-items': ['flex-start', 'center', 'flex-end', 'stretch', 'baseline'],
+            'justify-content': ['flex-start', 'start', 'center', 'flex-end', 'end', 'space-between', 'space-around', 'space-evenly'],
+            'align-items': ['flex-start', 'start', 'center', 'flex-end', 'end', 'stretch', 'baseline'],
+            'align-self': ['auto', 'flex-start', 'start', 'center', 'flex-end', 'end', 'stretch', 'baseline'],
+            'flex-wrap': ['nowrap', 'wrap', 'wrap-reverse'],
             'text-align': ['left', 'center', 'right', 'justify'],
             'font-weight': ['normal', 'bold', 'bolder', 'lighter', '100', '200', '300', '400', '500', '600', '700', '800', '900'],
             'font-style': ['normal', 'italic', 'oblique'],
@@ -343,10 +345,12 @@ class StyleEngine:
         
         # Validate length values (px, em, rem, %)
         length_properties = [
-            'width', 'height', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+            'width', 'height', 'min-width', 'max-width', 'min-height', 'max-height',
+            'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
             'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
             'border-width', 'border-radius', 'border-top-left-radius', 'border-top-right-radius',
-            'border-bottom-left-radius', 'border-bottom-right-radius', 'font-size', 'gap', 'left', 'top'
+            'border-bottom-left-radius', 'border-bottom-right-radius', 'font-size', 'gap',
+            'left', 'top', 'right', 'bottom'
         ]
         
         if property_name in length_properties and value not in ['auto', 'none', 'inherit', 'initial']:

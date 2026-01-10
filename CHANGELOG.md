@@ -2,6 +2,59 @@
 
 All notable changes to html2pic will be documented in this file.
 
+## [0.2.0] - 2026-01-10
+
+### ⚠️ BREAKING CHANGES
+
+This release requires **PicTex 2.0** or higher. The underlying layout engine has been migrated to use Taffy (via `stretchable` bindings).
+
+- **`fill-available` size mode removed**: This was a non-standard CSS value internal to PicTex 1.x. Use `flex-grow: 1` in your CSS instead for elements that should fill available space.
+
+### ✨ New Features
+
+- **Full CSS Positioning Support**: Complete implementation of CSS positioning model
+  - `position: relative` with `top`, `right`, `bottom`, `left` offsets
+  - `position: absolute` for parent-relative positioning  
+  - `position: fixed` for canvas-relative positioning
+  - All four inset properties (`top`, `right`, `bottom`, `left`) now supported
+
+- **Flex Item Properties**: Fine-grained flexbox control
+  - `flex-grow`: Control how elements grow to fill available space
+  - `flex-shrink`: Control how elements shrink when space is limited  
+  - `align-self`: Override container's alignment for individual items
+
+- **Multi-line Flex Containers**: 
+  - `flex-wrap: wrap` and `flex-wrap: wrap-reverse` for responsive layouts
+
+- **Size Constraints**:
+  - `min-width`, `max-width`: Set width boundaries
+  - `min-height`, `max-height`: Set height boundaries
+  - All support both pixel and percentage values
+
+- **Aspect Ratio**:
+  - `aspect-ratio`: Maintain element proportions (e.g., `16/9` or `1.777`)
+
+- **CSS Transforms (translate only)**:
+  - `transform: translate(x, y)`, `translateX(x)`, `translateY(y)`
+  - Enables anchor-based centering: `top: 50%; left: 50%; transform: translate(-50%, -50%)`
+
+- **CSS-Standard Values**: Now accepts both CSS standard values (`start`, `end`) and flex-prefixed values (`flex-start`, `flex-end`) for `justify-content` and `align-items`
+
+### 🔧 Improvements
+
+- **Robust Layout Engine**: Migrated to Taffy-based layout engine via PicTex 2.0 for improved flexbox correctness
+- **Better Text Wrapping**: Improved text wrapping behavior in nested containers
+- **Percentage-based Sizing**: More accurate percentage-based width/height calculations
+
+### 🏗️ Internal Changes
+
+- Translator updated to use PicTex 2.0 API:
+  - `justify_content()` replaces `horizontal_distribution()`/`vertical_distribution()`
+  - `align_items()` replaces `vertical_align()`/`horizontal_align()`
+  - Positioning uses keyword arguments (`top=`, `left=`, etc.) instead of positional args
+- Added new helper methods for size constraints, aspect ratio, and flex item properties
+- Updated CSS validation to recognize new properties
+
 ## [0.1.3] - 2024-09-13
 
 ### ✨ New Features

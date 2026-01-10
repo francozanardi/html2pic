@@ -303,26 +303,30 @@ class CssParser:
         supported_properties = {
             # Layout
             'display', 'flex-direction', 'justify-content', 'align-items', 'gap',
+            # Flex item properties (PicTex 2.0)
+            'flex-grow', 'flex-shrink', 'align-self', 'flex-wrap',
             # Box model
             'width', 'height', 'padding', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
             'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
             'border', 'border-width', 'border-style', 'border-color', 'border-radius',
             'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
+            # Size constraints (PicTex 2.0)
+            'min-width', 'max-width', 'min-height', 'max-height', 'aspect-ratio',
             # Visual
             'background-color', 'background-image', 'background-size', 'box-shadow', 'text-shadow',
             # Typography
             'color', 'font-family', 'font-size', 'font-weight', 'font-style',
             'text-align', 'line-height', 'text-decoration', 'text-wrap',
-            # Positioning (absolute only)
-            'position', 'left', 'top'
+            # Positioning (PicTex 2.0: full support for all position types)
+            'position', 'left', 'top', 'right', 'bottom',
+            # Transforms (PicTex 2.0: translate only)
+            'transform'
         }
         
         # Properties we partially support or have limitations
         partially_supported = {
             'background': 'Use background-color or background-image instead',
             'font': 'Use individual font properties instead',
-            'right': 'Only left/top positioning supported with position absolute',
-            'bottom': 'Only left/top positioning supported with position absolute',
         }
         
         if property_name not in supported_properties and property_name not in partially_supported:
