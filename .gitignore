@@ -143,3 +143,7 @@ dmypy.json
 .Trashes
 ehthumbs.db
 Thumbs.db
+
+# PDM package manager
+.pdm-python
+pdm.lock

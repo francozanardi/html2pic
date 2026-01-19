@@ -25,6 +25,8 @@ from .style_applicators import (
 class PicTexTranslator:
     """Translates a styled DOM tree into PicTex builders."""
     
+    SKIP_TAGS = {"link", "style", "head"}
+    
     def __init__(self):
         self.warnings = get_warning_collector()
         self.element_factory = ElementFactory()
@@ -35,7 +37,7 @@ class PicTexTranslator:
     def translate(
         self, 
         styled_dom: DOMNode, 
-        font_registry: FontRegistry = None
+        font_registry: Optional[FontRegistry] = None
     ) -> Tuple[Canvas, Optional[Element]]:
         """Translate a styled DOM tree to PicTex builders."""
         self.font_registry = font_registry
@@ -73,6 +75,9 @@ class PicTexTranslator:
         return self.element_factory.create_text(content)
     
     def _create_element(self, node: DOMNode) -> Optional[Element]:
+        if node.tag and node.tag.lower() in self.SKIP_TAGS:
+            return None
+        
         styles = node.computed_styles
         
         if styles.get('display') == 'none':
