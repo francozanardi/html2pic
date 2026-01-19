@@ -13,13 +13,6 @@ from .parsing import CSSRule
 from .fonts import FontRegistry
 from typing import Optional, List, Callable
 
-def default_fetcher(url: str) -> str:
-    """Default fetcher function to retrieve content from a URL."""
-    import requests
-    response = requests.get(url, timeout=30)
-    response.raise_for_status()
-    return response.text
-
 class Html2Pic:
     """Convert HTML + CSS to images using PicTex.
     
@@ -37,10 +30,7 @@ class Html2Pic:
     def __init__(self, html: str, css: str = "", fetcher: Optional[Callable[[str], str]] = None, root_url: Optional[str] = None):
         self.html = html
         self.css = css
-        if fetcher is None:
-            self.fetcher = default_fetcher
-        else:
-            self.fetcher = fetcher
+        self.fetcher = fetcher
         self.root_url = root_url
         
         self._html_parser: HtmlParser = HtmlParser()
@@ -139,6 +129,9 @@ class Html2Pic:
                 elif n.tag and n.tag.lower() == 'link':
                     rel = n.attributes.get('rel', '').lower()
                     if rel == 'stylesheet':
+                        if not self.fetcher:
+                            self._warnings.warn_unexpected_error("No fetcher provided.")
+                            return
                         href = n.attributes.get('href')
                         if href:
                             try:
