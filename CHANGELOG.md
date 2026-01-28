@@ -2,6 +2,11 @@
 
 All notable changes to html2pic will be documented in this file.
 
+## [0.2.2] - 2026-01-28
+
+### Fixed
+- Typo in import
+
 ## [0.2.0] - 2026-01-10
 
 ### ⚠️ BREAKING CHANGES
