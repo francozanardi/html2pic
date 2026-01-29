@@ -11,7 +11,7 @@ from .exceptions import RenderError
 from .dom import DOMNode
 from .parsing import CSSRule
 from .fonts import FontRegistry
-from typing import Optional, List
+from typing import Optional, List, Callable
 
 class Html2Pic:
     """Convert HTML + CSS to images using PicTex.
@@ -27,9 +27,11 @@ class Html2Pic:
         ```
     """
     
-    def __init__(self, html: str, css: str = ""):
+    def __init__(self, html: str, css: str = "", fetcher: Optional[Callable[[str], str]] = None, root_url: Optional[str] = None):
         self.html = html
         self.css = css
+        self.fetcher = fetcher
+        self.root_url = root_url
         
         self._html_parser: HtmlParser = HtmlParser()
         self._css_parser: CssParser = CssParser()
@@ -48,11 +50,18 @@ class Html2Pic:
     def dom_tree(self) -> DOMNode:
         if self._dom_tree is None:
             self._dom_tree = self._html_parser.parse(self.html)
+            # Extract CSS from DOM and append to self.css
+            extracted_css = self._extract_css_from_dom(self._dom_tree)
+            if extracted_css:
+                self.css = self.css + "\n\n" + extracted_css if self.css else extracted_css
         return self._dom_tree
     
     @property
     def style_rules(self) -> List[CSSRule]:
         if self._style_rules is None:
+            # Ensure DOM is parsed first (which extracts CSS)
+            _ = self.dom_tree
+            # Now parse all CSS including extracted content
             self._style_rules, self._font_registry = self._css_parser.parse(self.css)
         return self._style_rules
 
@@ -60,7 +69,7 @@ class Html2Pic:
     def font_registry(self) -> FontRegistry:
         if self._font_registry is None:
             _ = self.style_rules
-        return self._font_registry
+        return self._font_registry # pyright: ignore[reportReturnType]
     
     @property
     def styled_tree(self) -> DOMNode:
@@ -103,6 +112,48 @@ class Html2Pic:
         except Exception as e:
             self._print_warnings()
             raise RenderError(f"Failed to render SVG: {e}") from e
+    
+    def _extract_css_from_dom(self, node: DOMNode) -> str:
+        """Extract CSS from <style> tags and <link> tags."""
+        css_content = []
+        
+        def traverse(n: DOMNode):
+            if n.is_element():
+                # Extract <style> tag content
+                if n.tag and n.tag.lower() == 'style':
+                    text = n.get_all_text().strip()
+                    if text:
+                        css_content.append(text)
+                
+                # Extract <link rel="stylesheet"> tags
+                elif n.tag and n.tag.lower() == 'link':
+                    rel = n.attributes.get('rel', '').lower()
+                    if rel == 'stylesheet':
+                        if not self.fetcher:
+                            self._warnings.warn_unexpected_error("No fetcher provided.")
+                            return
+                        href = n.attributes.get('href')
+                        if href:
+                            try:
+                                # Resolve URL if root_url is provided
+                                if self.root_url and not href.startswith(('http://', 'https://')):
+                                    from urllib.parse import urljoin
+                                    href = urljoin(self.root_url, href)
+                                
+                                # Fetch CSS content
+                                # FIXME: Workaround; CSS3 @import handling is not implemented here
+                                fetched_css = self.fetcher(href)
+                                if fetched_css:
+                                    css_content.append(fetched_css)
+                            except Exception as e:
+                                self._warnings.warn_unexpected_error(f"Failed to fetch CSS from {href}: {e}")
+                
+                # Traverse children
+                for child in n.children:
+                    traverse(child)
+        
+        traverse(node)
+        return '\n\n'.join(css_content)
     
     def debug_info(self) -> Dict[str, Any]:
         return {
