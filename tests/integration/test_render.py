@@ -207,3 +207,14 @@ class TestColors:
         assert warnings_collector.get_warnings() == []
         assert px(img, 1, 2)[0] > 240
         assert px(img, 98, 2)[2] > 240
+
+
+def test_descendant_selectors_render(render_rgba):
+    css = (
+        ".wrap { display: flex }"
+        ".wrap .box { width: 10px; height: 10px; background-color: red }"
+        ".box { width: 10px; height: 10px; background-color: blue }"
+    )
+    img = render_rgba('<div class="wrap"><div class="box"></div></div><div class="box"></div>', css)
+    assert px(img, 5, 5) == RED
+    assert px(img, 5, 15) == BLUE

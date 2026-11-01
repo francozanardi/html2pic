@@ -214,3 +214,22 @@ class TestModernColorSyntax:
     def test_malformed_falls_back_to_black(self, value, warnings_collector):
         assert ColorNormalizer().normalize(value) == "black"
         assert len(warnings_collector.get_warnings()) == 1
+
+
+class TestComplexSelectorCascade:
+    def test_descendant_selector_applies(self, computed):
+        css = ".card h1 { color: red }"
+        assert computed('<div class="card"><h1>x</h1></div>', css, tag="h1")["color"] == "red"
+
+    def test_descendant_beats_plain_type_selector(self, computed):
+        css = ".card h1 { color: red } h1 { color: blue }"
+        assert computed('<div class="card"><h1>x</h1></div>', css, tag="h1")["color"] == "red"
+
+    def test_one_id_beats_many_classes(self, computed):
+        css = "#x { color: red } .a .b .c .d { color: blue }"
+        html = '<div class="a"><div class="b"><div class="c"><p id="x" class="d">t</p></div></div></div>'
+        assert computed(html, css, tag="p")["color"] == "red"
+
+    def test_compound_class_beats_single_class(self, computed):
+        css = ".a.b { color: red } .b { color: blue }"
+        assert computed('<p class="a b">x</p>', css, tag="p")["color"] == "red"

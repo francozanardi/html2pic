@@ -27,7 +27,7 @@ class TestCssParser:
 
     @pytest.mark.parametrize(
         "selector, specificity",
-        [("#id", 100), (".cls", 10), ("div", 1), ("*", 0)],
+        [("#id", 10000), (".cls", 100), ("div", 1), ("*", 0), ("div.a#b", 10101), (".a .b > p", 201)],
     )
     def test_specificity(self, selector, specificity):
         rules, _ = parse(f"{selector} {{ color: red }}")
@@ -213,3 +213,39 @@ class TestBackgroundShorthand:
     def test_later_longhand_overrides_shorthand(self):
         rules, _ = parse("div { background: red; background-color: blue }")
         assert rules[0].declarations["background-color"] == "blue"
+
+
+class TestUnsupportedSelectors:
+    @pytest.mark.parametrize(
+        "selector, reason",
+        [
+            ("a:hover", "pseudo-classes"),
+            ("p::after", "pseudo-classes"),
+            ("[type=text]", "attribute"),
+            ("h1 + p", "adjacent sibling"),
+            ("li ~ li", "general sibling"),
+            ("> p", "misplaced"),
+            ("div >", "dangling"),
+            (".a > > .b", "misplaced"),
+            ("div$", "unexpected character"),
+        ],
+    )
+    def test_unsupported_selectors_are_skipped_with_warning(self, selector, reason, warnings_collector):
+        rules, _ = parse(f"{selector} {{ color: red }}")
+        assert rules == []
+        (warning,) = warnings_collector.get_warnings(WarningCategory.CSS_PARSING)
+        assert warning["details"]["selector"] == selector
+        assert reason in warning["details"]["reason"]
+
+    def test_only_the_unsupported_part_of_a_list_is_skipped(self):
+        rules, _ = parse("h1, a:hover, #x { color: red }")
+        assert [r.selector for r in rules] == ["h1", "#x"]
+
+    @pytest.mark.parametrize(
+        "selector",
+        ["h1", "my-element", ".btn-primary", "#_main", ".-x", "*", ".card h1", "div > p", "div.card", ".a.b", "ul>li"],
+    )
+    def test_supported_selectors_do_not_warn(self, selector, warnings_collector):
+        rules, _ = parse(f"{selector} {{ color: red }}")
+        assert len(rules) == 1
+        assert warnings_collector.get_warnings() == []

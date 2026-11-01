@@ -4,7 +4,7 @@ from typing import List, Tuple
 import tinycss2
 
 from .css_rule import CSSRule
-from .selector import ParsedSelector, SelectorType
+from .selector import Selector, UnsupportedSelectorError, specificity_to_int
 from .shorthand_expander import ShorthandExpander
 from ..fonts import FontFace, FontRegistry, FontSrcParser
 from ..warnings import get_warning_collector
@@ -62,11 +62,15 @@ class CssParser:
         
         css_rules = []
         for selector in selectors:
-            specificity = self._calculate_specificity(selector)
+            try:
+                parsed = Selector.parse(selector)
+            except UnsupportedSelectorError as e:
+                self.warnings.warn_css_selector_ignored(selector, str(e))
+                continue
             css_rules.append(CSSRule(
-                selector=selector.strip(),
+                selector=parsed.text,
                 declarations=declarations,
-                specificity=specificity
+                specificity=specificity_to_int(parsed.specificity)
             ))
         return css_rules
     
@@ -116,20 +120,6 @@ class CssParser:
                 declarations[prop_name] = prop_value
         
         return declarations
-    
-    def _calculate_specificity(self, selector: str) -> int:
-        try:
-            parsed = ParsedSelector.parse(selector)
-            if parsed.selector_type == SelectorType.ID:
-                return 100
-            elif parsed.selector_type == SelectorType.CLASS:
-                return 10
-            elif parsed.selector_type == SelectorType.TAG:
-                return 1
-            return 0
-        except Exception as e:
-            self.warnings.warn_unexpected_error(f"Failed to calculate specificity for selector '{selector}': {e}")
-            return 1
     
     def _check_property(self, name: str, value: str):
         if name not in self.SUPPORTED_PROPERTIES:
