@@ -101,6 +101,16 @@ class TestSpacingApplicator:
         assert builder.called("padding") == [(expected, {})]
 
 
+class TestPercentSpacing:
+    def test_percent_padding_warns_instead_of_silently_dropping(self, warnings_collector):
+        apply(SpacingApplicator(), **{"padding-top": "10%"})
+        assert any("padding" in w["message"] for w in warnings_collector.get_warnings())
+
+    def test_percent_gap_warns(self, warnings_collector):
+        apply(LayoutApplicator(), gap="5%")
+        assert any("gap" in w["message"] for w in warnings_collector.get_warnings())
+
+
 class TestBorderApplicator:
     def test_no_border_by_default(self):
         b = apply(BorderApplicator())
@@ -113,6 +123,13 @@ class TestBorderApplicator:
 
     def test_uniform_radius_from_shorthand(self):
         assert apply(BorderApplicator(), **{"border-radius": "8px"}).called("border_radius") == [((8.0,), {})]
+
+    def test_percentage_radius_is_passed_through(self):
+        assert apply(BorderApplicator(), **{"border-radius": "50%"}).called("border_radius") == [(("50%",), {})]
+
+    def test_mixed_corner_units(self):
+        b = apply(BorderApplicator(), **{"border-top-left-radius": "50%", "border-top-right-radius": "4px"})
+        assert b.called("border_radius") == [(("50%", 4.0, 0, 0), {})]
 
     def test_individual_corners(self):
         b = apply(BorderApplicator(), **{"border-top-left-radius": "4px", "border-bottom-right-radius": "2px"})

@@ -67,28 +67,34 @@ class StyleEngine:
         for child in node.children:
             self._apply_recursive(child, css_rules, computed)
     
+    LENGTH_PROPERTIES = (
+        'width', 'height', 'min-width', 'max-width', 'min-height', 'max-height',
+        'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
+        'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
+        'border-width', 'border-radius', 'border-top-left-radius', 'border-top-right-radius',
+        'border-bottom-left-radius', 'border-bottom-right-radius', 'gap',
+        'top', 'right', 'bottom', 'left',
+    )
+
     def _normalize(self, styles: Dict[str, Any], parent_styles: Dict[str, Any]) -> Dict[str, Any]:
         normalized = styles.copy()
         
-        if 'font-size' in normalized:
-            normalized['font-size'] = self.unit_converter.to_pixels(
-                normalized['font-size'],
-                parent_styles.get('font-size', f'{self.base_font_size}px')
-            )
+        # font-size: em and % are relative to the parent's font size.
+        parent_font_size = parent_styles.get('font-size', f'{self.base_font_size}px')
+        normalized['font-size'] = self.unit_converter.to_pixels(
+            normalized['font-size'],
+            parent_value=parent_font_size,
+            font_size=parent_font_size,
+        )
         
-        length_properties = [
-            'width', 'height', 'padding-top', 'padding-right', 'padding-bottom', 'padding-left',
-            'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
-            'border-width', 'border-radius', 'border-top-left-radius', 'border-top-right-radius',
-            'border-bottom-left-radius', 'border-bottom-right-radius', 'gap'
-        ]
-        
-        for prop in length_properties:
+        # Other lengths: em is relative to the element's own font size. Percentages are
+        # left untouched; they are resolved by the layout engine (or reported as unsupported
+        # by the applicator) because their reference box is only known at layout time.
+        for prop in self.LENGTH_PROPERTIES:
             if prop in normalized:
                 normalized[prop] = self.unit_converter.to_pixels(
                     normalized[prop],
-                    parent_styles.get(prop, '0px'),
-                    normalized.get('font-size', f'{self.base_font_size}px')
+                    font_size=normalized['font-size'],
                 )
         
         normalized['display'] = self._normalize_display(normalized.get('display', 'block'))

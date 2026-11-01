@@ -153,3 +153,26 @@ def test_type_and_universal_selectors_do_not_pad_synthetic_root(render_rgba, sel
     css = f"{selector} {{ padding: 10px }} p {{ width: 10px; height: 10px; background-color: red; padding: 0 }}"
     img = render_rgba("<div><p></p></div>", css)
     assert img.shape[:2] == (30, 30)
+
+
+class TestUnits:
+    def test_percentage_width_resolves_against_parent(self, render_rgba):
+        css = ".p { width: 100px; height: 10px } .c { width: 50%; height: 10px; background-color: red }"
+        img = render_rgba('<div class="p"><div class="c"></div></div>', css)
+        assert px(img, 45, 5) == RED
+        assert px(img, 55, 5) == TRANSPARENT
+
+    def test_percentage_border_radius_makes_a_circle(self, render_rgba):
+        img = render_rgba('<div class="b"></div>', f".b {{ {box(40, 40, 'red', 'border-radius: 50%;')} }}")
+        assert px(img, 0, 0)[3] == 0
+        assert px(img, 3, 3)[3] == 0  # ~24px from the centre: outside the r=20 circle
+        assert px(img, 20, 20) == RED
+
+    def test_rem_sizes(self, render_rgba):
+        img = render_rgba('<div class="b"></div>', ".b { width: 2rem; height: 1rem; background-color: red }")
+        assert img.shape[:2] == (16, 32)
+
+    def test_em_font_size_is_relative_to_parent(self, render_rgba):
+        small = render_rgba('<div class="p"><p>Hg</p></div>', ".p { font-size: 10px } p { font-size: 2em }")
+        big = render_rgba('<div class="p"><p>Hg</p></div>', ".p { font-size: 40px } p { font-size: 2em }")
+        assert big.shape[0] > small.shape[0] * 1.5

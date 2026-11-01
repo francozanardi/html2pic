@@ -45,6 +45,10 @@ class LayoutApplicator(StyleApplicator):
                     builder = builder.gap(gap_value)
             except ValueError as e:
                 self.warnings.warn_unexpected_error(f"Failed to parse PIXEL value '{gap}': {e}")
+        elif gap.endswith('%'):
+            self.warnings.warn_style_not_applied(
+                'gap', gap, 'element', "Percentage values are not supported; use px, em or rem."
+            )
         return builder
     
     def _apply_justify(self, builder: Union[Row, Column], styles: Dict[str, Any]) -> Union[Row, Column]:

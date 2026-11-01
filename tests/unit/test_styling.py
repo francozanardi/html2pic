@@ -147,3 +147,44 @@ class TestSyntheticRoot:
         root = Html2Pic("<p>x</p>", f"{selector} {{ padding: 10px; color: red }}").styled_tree
         assert root.computed_styles["padding-top"] == DEFAULT_STYLES["padding-top"]
         assert root.computed_styles["color"] == DEFAULT_STYLES["color"]
+
+
+class TestUnitRegressions:
+    def test_rem_is_converted(self):
+        # 'rem' also ends with 'em'; it used to be parsed as em and fail.
+        assert UnitConverter().to_pixels("2rem") == "32.0px"
+        assert UnitConverter(base_font_size=10).to_pixels("1.5rem") == "15.0px"
+
+    def test_rem_ignores_element_font_size(self):
+        assert UnitConverter().to_pixels("1rem", font_size="40px") == "16.0px"
+
+    def test_percent_resolves_only_against_pixel_reference(self):
+        assert UnitConverter().to_pixels("50%", parent_value="30px") == "15.0px"
+        assert UnitConverter().to_pixels("50%") == "50%"
+        assert UnitConverter().to_pixels("50%", parent_value="auto") == "50%"
+
+    @pytest.mark.parametrize("value, expected", [("2em", "40.0px"), ("150%", "30.0px"), ("1rem", "16.0px"), ("12px", "12px")])
+    def test_font_size_is_relative_to_parent_font_size(self, computed, value, expected):
+        css = f"div {{ font-size: 20px }} p {{ font-size: {value} }}"
+        assert computed("<div><p>x</p></div>", css, tag="p")["font-size"] == expected
+
+    def test_nested_em_font_sizes_compound(self, computed):
+        css = "div { font-size: 10px } section { font-size: 2em } p { font-size: 2em }"
+        assert computed("<div><section><p>x</p></section></div>", css, tag="p")["font-size"] == "40.0px"
+
+    def test_rem_lengths(self, computed):
+        styles = computed("<div></div>", "div { padding: 1rem; width: 10rem }")
+        assert styles["padding-top"] == "16.0px"
+        assert styles["width"] == "160.0px"
+
+    @pytest.mark.parametrize("prop", ["padding-top", "border-radius", "width", "top", "max-width"])
+    def test_percentages_are_preserved_for_the_layout_engine(self, computed, prop):
+        # They used to be resolved against the *parent's value of the same property*,
+        # e.g. padding: 10% became 10% of the parent's padding (usually 0px).
+        css = f"section {{ width: 200px; padding: 4px; border-radius: 4px }} div {{ {prop}: 10% }}"
+        assert computed("<section><div></div></section>", css)[prop] == "10%"
+
+    def test_em_in_insets_and_constraints(self, computed):
+        styles = computed("<div></div>", "div { font-size: 10px; top: 2em; max-width: 3em }")
+        assert styles["top"] == "20.0px"
+        assert styles["max-width"] == "30.0px"
