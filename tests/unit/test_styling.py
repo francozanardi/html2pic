@@ -135,3 +135,15 @@ class TestStyleEngine:
     def test_unsupported_display_falls_back_to_block_with_warning(self, computed, warnings_collector):
         assert computed("<div></div>", "div { display: grid }")["display"] == "block"
         assert any("grid" in w["message"] for w in warnings_collector.get_warnings())
+
+
+class TestSyntheticRoot:
+    """The parser wraps the document in a <div class="_root">; user CSS must not style it."""
+
+    @pytest.mark.parametrize("selector", ["div", "*"])
+    def test_root_wrapper_ignores_user_rules(self, selector):
+        from html2pic import Html2Pic
+
+        root = Html2Pic("<p>x</p>", f"{selector} {{ padding: 10px; color: red }}").styled_tree
+        assert root.computed_styles["padding-top"] == DEFAULT_STYLES["padding-top"]
+        assert root.computed_styles["color"] == DEFAULT_STYLES["color"]

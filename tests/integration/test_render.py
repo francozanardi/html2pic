@@ -146,3 +146,10 @@ def test_render_does_not_write_debug_output_for_transforms(capsys):
     css = ".b { width: 10px; height: 10px; background-color: red; transform: translate(2px, 2px) }"
     Html2Pic('<div class="b"></div>', css).render()
     assert "translate_x" not in capsys.readouterr().out
+
+
+@pytest.mark.parametrize("selector", ["div", "*"])
+def test_type_and_universal_selectors_do_not_pad_synthetic_root(render_rgba, selector):
+    css = f"{selector} {{ padding: 10px }} p {{ width: 10px; height: 10px; background-color: red; padding: 0 }}"
+    img = render_rgba("<div><p></p></div>", css)
+    assert img.shape[:2] == (30, 30)

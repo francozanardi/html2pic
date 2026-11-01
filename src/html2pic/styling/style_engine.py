@@ -35,14 +35,17 @@ class StyleEngine:
     ) -> DOMNode:
         """Apply CSS rules to a DOM tree, computing final styles for each node."""
         self.font_registry = font_registry
-        self._apply_recursive(dom_tree, css_rules, {})
+        # The top node is the synthetic wrapper created by the HTML parser, not part of
+        # the user's document, so CSS rules (e.g. `div { padding: 10px }`) must not match it.
+        self._apply_recursive(dom_tree, css_rules, {}, match_rules=False)
         return dom_tree
     
     def _apply_recursive(
         self, 
         node: DOMNode, 
         css_rules: List[CSSRule], 
-        parent_styles: Dict[str, Any]
+        parent_styles: Dict[str, Any],
+        match_rules: bool = True,
     ):
         computed = DEFAULT_STYLES.copy()
         
@@ -50,12 +53,13 @@ class StyleEngine:
             if prop in parent_styles:
                 computed[prop] = parent_styles[prop]
         
-        matching_rules = self.cascade_resolver.find_matching_rules(node, css_rules)
-        matching_rules.sort(key=lambda r: r.specificity)
-        
-        for rule in matching_rules:
-            for prop, value in rule.declarations.items():
-                computed[prop] = value
+        if match_rules:
+            matching_rules = self.cascade_resolver.find_matching_rules(node, css_rules)
+            matching_rules.sort(key=lambda r: r.specificity)
+            
+            for rule in matching_rules:
+                for prop, value in rule.declarations.items():
+                    computed[prop] = value
         
         computed = self._normalize(computed, parent_styles)
         node.computed_styles = computed
