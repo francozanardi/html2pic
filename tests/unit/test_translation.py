@@ -303,3 +303,35 @@ class TestTranslator:
         (p,) = root._children
         (text,) = p._children
         assert isinstance(text, Text)
+
+
+class TestTypographyRegressions:
+    @pytest.mark.parametrize(
+        "line_height, font_size, expected",
+        [
+            ("1.5", "16px", 1.5),
+            ("150%", "16px", 1.5),
+            ("24px", "16px", 1.5),  # used to be passed as a 24x multiplier
+            ("30px", "20px", 1.5),
+            ("2em", "16px", 2.0),
+            ("1.5rem", "12px", 2.0),
+            ("normal", "16px", "auto"),
+        ],
+    )
+    def test_line_height(self, line_height, font_size, expected):
+        b = apply(TypographyApplicator(), **{"line-height": line_height, "font-size": font_size})
+        (args, _), = b.called("line_height")
+        assert args[0] == (pytest.approx(expected) if isinstance(expected, float) else expected)
+
+    def test_underline_and_line_through(self):
+        b = apply(TypographyApplicator(), **{"text-decoration": "underline line-through", "font-size": "28px"})
+        assert b.called("underline") == [((2.0,), {})]
+        assert b.called("strikethrough") == [((2.0,), {})]
+
+    def test_no_decoration_by_default(self):
+        b = apply(TypographyApplicator())
+        assert b.called("underline") == [] and b.called("strikethrough") == []
+
+    def test_overline_warns(self, warnings_collector):
+        apply(TypographyApplicator(), **{"text-decoration": "overline"})
+        assert any("overline" in w["message"] for w in warnings_collector.get_warnings())

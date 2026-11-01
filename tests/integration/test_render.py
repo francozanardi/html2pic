@@ -218,3 +218,22 @@ def test_descendant_selectors_render(render_rgba):
     img = render_rgba('<div class="wrap"><div class="box"></div></div><div class="box"></div>', css)
     assert px(img, 5, 5) == RED
     assert px(img, 5, 15) == BLUE
+
+
+class TestTypography:
+    def test_px_line_height_is_absolute(self, render_rgba):
+        # Two lines at 20px line height should be ~40px tall, not 2 * 20 * 16px.
+        css = "p { font-size: 16px; line-height: 20px; width: 40px }"
+        img = render_rgba("<p>aaaa bbbb cccc</p>", css)
+        assert img.shape[0] < 100
+
+    def test_percent_line_height_matches_unitless(self, render_rgba):
+        html = "<p>aaaa bbbb cccc</p>"
+        a = render_rgba(html, "p { font-size: 16px; line-height: 150%; width: 40px }")
+        b = render_rgba(html, "p { font-size: 16px; line-height: 1.5; width: 40px }")
+        assert a.shape == b.shape
+
+    def test_underline_adds_ink_below_text(self, render_rgba):
+        plain = render_rgba("<p>aaaa</p>", "p { font-size: 30px; color: black }")
+        underlined = render_rgba("<p>aaaa</p>", "p { font-size: 30px; color: black; text-decoration: underline }")
+        assert (underlined[..., 3] > 0).sum() > (plain[..., 3] > 0).sum()
