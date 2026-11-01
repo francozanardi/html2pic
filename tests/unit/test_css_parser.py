@@ -176,3 +176,40 @@ class TestShorthandExpander:
     def test_border_keeps_function_arguments_together(self):
         result = ShorthandExpander().expand_border("1px solid rgb(1, 2, 3)")
         assert result["border-color"] == "rgb(1, 2, 3)"
+
+
+class TestBackgroundShorthand:
+    @pytest.mark.parametrize(
+        "value, color, image",
+        [
+            ("red", "red", "none"),
+            ("#fff", "#fff", "none"),
+            ("rgba(0, 0, 0, 0.5)", "rgba(0, 0, 0, 0.5)", "none"),
+            ("linear-gradient(135deg, #667eea 0%, #764ba2 100%)", "transparent", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)"),
+            ("url(bg.png) no-repeat center / cover", "transparent", "url(bg.png)"),
+            ("blue url('a b.png') repeat-x top left", "blue", "url('a b.png')"),
+            ("none", "transparent", "none"),
+            ("url(a.png), url(b.png) green", "green", "url(a.png)"),
+        ],
+    )
+    def test_expansion(self, value, color, image):
+        assert ShorthandExpander().expand_background(value) == {
+            "background-color": color,
+            "background-image": image,
+        }
+
+    def test_parser_expands_and_does_not_warn(self, warnings_collector):
+        rules, _ = parse("div { background: linear-gradient(red, blue) }")
+        assert rules[0].declarations == {
+            "background-color": "transparent",
+            "background-image": "linear-gradient(red, blue)",
+        }
+        assert warnings_collector.get_warnings() == []
+
+    def test_shorthand_resets_earlier_longhand(self):
+        rules, _ = parse("div { background-image: url(x.png); background: red }")
+        assert rules[0].declarations["background-image"] == "none"
+
+    def test_later_longhand_overrides_shorthand(self):
+        rules, _ = parse("div { background: red; background-color: blue }")
+        assert rules[0].declarations["background-color"] == "blue"

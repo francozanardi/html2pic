@@ -23,7 +23,7 @@ class CssParser:
         'border', 'border-width', 'border-style', 'border-color', 'border-radius',
         'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
         'min-width', 'max-width', 'min-height', 'max-height', 'aspect-ratio',
-        'background-color', 'background-image', 'background-size', 'box-shadow', 'text-shadow',
+        'background', 'background-color', 'background-image', 'background-size', 'box-shadow', 'text-shadow',
         'color', 'font-family', 'font-size', 'font-weight', 'font-style',
         'text-align', 'line-height', 'text-decoration', 'text-wrap',
         'position', 'left', 'top', 'right', 'bottom',
@@ -110,6 +110,8 @@ class CssParser:
                 declarations.update(self.shorthand_expander.expand_margin(prop_value))
             elif prop_name == 'border':
                 declarations.update(self.shorthand_expander.expand_border(prop_value))
+            elif prop_name == 'background':
+                declarations.update(self.shorthand_expander.expand_background(prop_value))
             else:
                 declarations[prop_name] = prop_value
         

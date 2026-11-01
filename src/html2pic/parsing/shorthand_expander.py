@@ -40,6 +40,69 @@ class ShorthandExpander:
         
         return declarations
     
+    # Tokens of the background shorthand that html2pic does not support (repeat,
+    # position, attachment, origin/clip boxes). They are skipped, not mistaken for colors.
+    BACKGROUND_IGNORED_KEYWORDS = {
+        'repeat', 'no-repeat', 'repeat-x', 'repeat-y', 'space', 'round',
+        'left', 'right', 'top', 'bottom', 'center',
+        'scroll', 'fixed', 'local',
+        'border-box', 'padding-box', 'content-box', 'text',
+        'auto', 'cover', 'contain', '/',
+    }
+    BACKGROUND_IMAGE_FUNCTIONS = (
+        'url(', 'linear-gradient(', 'radial-gradient(', 'conic-gradient(',
+        'repeating-linear-gradient(', 'repeating-radial-gradient(',
+    )
+
+    def expand_background(self, value: str) -> Dict[str, str]:
+        """Expand the `background` shorthand into background-color and background-image.
+
+        Like in CSS, sub-properties that are not given are reset to their initial values.
+        Only the last layer of a multi-layer background may carry a color; html2pic
+        renders a single layer, so only the first image is kept.
+        """
+        declarations = {'background-color': 'transparent', 'background-image': 'none'}
+        layers = self._split_top_level(value, ',')
+        image_found = False
+
+        for index, layer in enumerate(layers):
+            is_last = index == len(layers) - 1
+            for part in self._split_preserving_functions(layer):
+                lowered = part.lower()
+                if lowered.startswith(self.BACKGROUND_IMAGE_FUNCTIONS):
+                    if not image_found:
+                        declarations['background-image'] = part
+                        image_found = True
+                elif lowered == 'none':
+                    continue
+                elif is_last and self._looks_like_color(lowered):
+                    declarations['background-color'] = part
+
+        return declarations
+
+    def _looks_like_color(self, token: str) -> bool:
+        if token in self.BACKGROUND_IGNORED_KEYWORDS or '/' in token:
+            return False
+        if token.startswith(('#', 'rgb(', 'rgba(', 'hsl(', 'hsla(')):
+            return True
+        return token.isalpha()
+
+    def _split_top_level(self, value: str, separator: str) -> List[str]:
+        parts, current, depth = [], '', 0
+        for char in value:
+            if char == '(':
+                depth += 1
+            elif char == ')':
+                depth -= 1
+            if char == separator and depth == 0:
+                parts.append(current.strip())
+                current = ''
+            else:
+                current += char
+        if current.strip():
+            parts.append(current.strip())
+        return parts
+
     def _parse_box_values(self, value: str) -> List[str]:
         values = value.split()
         

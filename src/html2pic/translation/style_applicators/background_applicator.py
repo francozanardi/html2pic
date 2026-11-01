@@ -44,6 +44,11 @@ class BackgroundApplicator(StyleApplicator):
             if url:
                 size = styles.get('background-size', DEFAULT_STYLES['background-size'])
                 builder = builder.background_image(url, size)
+        else:
+            self.warnings.warn_style_not_applied(
+                'background-image', bg_image, 'element',
+                "Only url() and linear-gradient() are supported."
+            )
         
         return builder
     

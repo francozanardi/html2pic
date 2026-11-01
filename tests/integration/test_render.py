@@ -176,3 +176,20 @@ class TestUnits:
         small = render_rgba('<div class="p"><p>Hg</p></div>', ".p { font-size: 10px } p { font-size: 2em }")
         big = render_rgba('<div class="p"><p>Hg</p></div>', ".p { font-size: 40px } p { font-size: 2em }")
         assert big.shape[0] > small.shape[0] * 1.5
+
+
+class TestBackgroundShorthand:
+    def test_solid_color(self, render_rgba):
+        img = render_rgba('<div class="b"></div>', ".b { width: 10px; height: 10px; background: red }")
+        assert px(img, 5, 5) == RED
+
+    def test_gradient_as_used_in_readme_quick_start(self, render_rgba):
+        css = ".g { width: 100px; height: 10px; background: linear-gradient(to right, red, blue) }"
+        img = render_rgba('<div class="g"></div>', css)
+        assert px(img, 1, 5)[0] > 240
+        assert px(img, 98, 5)[2] > 240
+
+    def test_unsupported_image_warns(self, warnings_collector):
+        css = ".g { width: 10px; height: 10px; background: radial-gradient(red, blue) }"
+        Html2Pic('<div class="g"></div>', css).render()
+        assert any("radial-gradient" in w["message"] for w in warnings_collector.get_warnings())
