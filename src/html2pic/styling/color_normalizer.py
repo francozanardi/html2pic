@@ -1,4 +1,5 @@
 """CSS color normalization."""
+import colorsys
 import re
 from ..warnings import get_warning_collector
 
@@ -24,31 +25,70 @@ class ColorNormalizer:
         if color_value == 'transparent':
             return 'transparent'
         
-        if color_value.startswith('rgba(') or color_value.startswith('rgb('):
+        if color_value.startswith(('rgba(', 'rgb(')):
             return self._parse_rgba(color_value)
+        
+        if color_value.startswith(('hsla(', 'hsl(')):
+            return self._parse_hsla(color_value)
         
         return color_value
     
+    def _split_args(self, func_string: str):
+        """Split the arguments of rgb()/hsl() in either legacy (commas) or modern (spaces, '/') syntax."""
+        inner = func_string[func_string.index('(') + 1:func_string.rindex(')')]
+        alpha = None
+        if '/' in inner:
+            inner, alpha = inner.split('/', 1)
+            alpha = alpha.strip()
+        parts = [p for p in inner.replace(',', ' ').split() if p]
+        if alpha is None and len(parts) == 4:
+            alpha = parts.pop()
+        return parts, alpha
+    
+    @staticmethod
+    def _parse_alpha(alpha) -> float:
+        if alpha is None:
+            return 1.0
+        if alpha.endswith('%'):
+            return max(0.0, min(1.0, float(alpha[:-1]) / 100))
+        return max(0.0, min(1.0, float(alpha)))
+    
+    @staticmethod
+    def _to_hex(r: float, g: float, b: float, alpha: float) -> str:
+        if alpha <= 0.01:
+            return 'transparent'
+        channels = [max(0, min(255, int(round(c)))) for c in (r, g, b)]
+        return '#{:02x}{:02x}{:02x}{:02x}'.format(*channels, int(alpha * 255))
+    
     def _parse_rgba(self, rgba_string: str) -> str:
-        values_str = rgba_string.replace('rgba(', '').replace('rgb(', '').replace(')', '').strip()
-        values = [val.strip() for val in values_str.split(',')]
-        
         try:
-            r = max(0, min(255, int(float(values[0]))))
-            g = max(0, min(255, int(float(values[1]))))
-            b = max(0, min(255, int(float(values[2]))))
-            
-            alpha = 1.0
-            if len(values) >= 4:
-                alpha = float(values[3])
-            
-            if alpha <= 0.01:
-                return 'transparent'
-            
-            a = int(alpha * 255)
-            return f'#{r:02x}{g:02x}{b:02x}{a:02x}'
-        except (ValueError, IndexError) as e:
+            parts, alpha = self._split_args(rgba_string)
+            if len(parts) != 3:
+                raise ValueError(f"expected 3 color channels, got {len(parts)}")
+            channels = [
+                float(p[:-1]) * 255 / 100 if p.endswith('%') else float(p)
+                for p in parts
+            ]
+            return self._to_hex(*channels, self._parse_alpha(alpha))
+        except ValueError as e:
             self.warnings.warn_unexpected_error(f"Failed to parse RGBA color '{rgba_string}': {e}")
+            return 'black'
+    
+    def _parse_hsla(self, hsla_string: str) -> str:
+        try:
+            parts, alpha = self._split_args(hsla_string)
+            if len(parts) != 3:
+                raise ValueError(f"expected 3 components, got {len(parts)}")
+            hue = parts[0]
+            if hue.endswith('deg'):
+                hue = hue[:-3]
+            h = (float(hue) % 360) / 360
+            s = max(0.0, min(1.0, float(parts[1].rstrip('%')) / 100))
+            l = max(0.0, min(1.0, float(parts[2].rstrip('%')) / 100))
+            r, g, b = colorsys.hls_to_rgb(h, l, s)
+            return self._to_hex(r * 255, g * 255, b * 255, self._parse_alpha(alpha))
+        except ValueError as e:
+            self.warnings.warn_unexpected_error(f"Failed to parse HSLA color '{hsla_string}': {e}")
             return 'black'
     
     def is_valid(self, color: str) -> bool:

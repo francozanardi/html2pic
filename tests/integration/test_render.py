@@ -193,3 +193,17 @@ class TestBackgroundShorthand:
         css = ".g { width: 10px; height: 10px; background: radial-gradient(red, blue) }"
         Html2Pic('<div class="g"></div>', css).render()
         assert any("radial-gradient" in w["message"] for w in warnings_collector.get_warnings())
+
+
+class TestColors:
+    @pytest.mark.parametrize("color", ["rgb(255 0 0)", "hsl(0, 100%, 50%)", "rgb(100% 0% 0%)"])
+    def test_modern_color_syntaxes_render(self, render_rgba, color):
+        img = render_rgba('<div class="b"></div>', f".b {{ width: 4px; height: 4px; background-color: {color} }}")
+        assert px(img, 2, 2) == RED
+
+    def test_rgba_gradient_stops(self, render_rgba, warnings_collector):
+        css = ".g { width: 100px; height: 4px; background-image: linear-gradient(to right, rgba(255, 0, 0, 1), hsl(240, 100%, 50%)) }"
+        img = render_rgba('<div class="g"></div>', css)
+        assert warnings_collector.get_warnings() == []
+        assert px(img, 1, 2)[0] > 240
+        assert px(img, 98, 2)[2] > 240

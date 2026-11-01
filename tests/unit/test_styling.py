@@ -188,3 +188,29 @@ class TestUnitRegressions:
         styles = computed("<div></div>", "div { font-size: 10px; top: 2em; max-width: 3em }")
         assert styles["top"] == "20.0px"
         assert styles["max-width"] == "30.0px"
+
+
+class TestModernColorSyntax:
+    @pytest.mark.parametrize(
+        "value, expected",
+        [
+            ("rgb(255 0 0)", "#ff0000ff"),
+            ("rgb(255 0 0 / 50%)", "#ff00007f"),
+            ("rgb(0 0 255 / 0.5)", "#0000ff7f"),
+            ("rgb(100%, 0%, 0%)", "#ff0000ff"),
+            ("rgba(255, 0, 0, 50%)", "#ff00007f"),
+            ("rgb(0 0 0 / 0)", "transparent"),
+            ("hsl(0, 100%, 50%)", "#ff0000ff"),
+            ("hsl(120deg 100% 25%)", "#008000ff"),
+            ("hsl(240 100% 50% / 0.5)", "#0000ff7f"),
+            ("hsla(0, 0%, 100%, 1)", "#ffffffff"),
+            ("hsl(360, 100%, 50%)", "#ff0000ff"),
+        ],
+    )
+    def test_normalize(self, value, expected):
+        assert ColorNormalizer().normalize(value) == expected
+
+    @pytest.mark.parametrize("value", ["hsl(1, 2)", "rgb(a b c)", "hsl(x, 1%, 1%)"])
+    def test_malformed_falls_back_to_black(self, value, warnings_collector):
+        assert ColorNormalizer().normalize(value) == "black"
+        assert len(warnings_collector.get_warnings()) == 1
