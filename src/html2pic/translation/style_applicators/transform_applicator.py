@@ -26,10 +26,6 @@ class TransformApplicator(StyleApplicator):
         transform = transform.strip().lower()
         
         translate_x, translate_y = self._parse_translate(transform)
-        print(f"element: {builder}")
-        print(f"children: {builder._children}")
-        print(f"translate_x: {translate_x}")
-        print(f"translate_y: {translate_y}")
         
         if translate_x is not None or translate_y is not None:
             kwargs = {}

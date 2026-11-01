@@ -140,3 +140,9 @@ def test_examples_run(script, tmp_path, monkeypatch):
             shutil.copy(asset, tmp_path)
     monkeypatch.chdir(tmp_path)
     runpy.run_path(str(script), run_name="__main__")
+
+
+def test_render_does_not_write_debug_output_for_transforms(capsys):
+    css = ".b { width: 10px; height: 10px; background-color: red; transform: translate(2px, 2px) }"
+    Html2Pic('<div class="b"></div>', css).render()
+    assert "translate_x" not in capsys.readouterr().out
