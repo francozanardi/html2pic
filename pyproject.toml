@@ -11,7 +11,7 @@ authors = [
 ]
 readme = "README.md"
 license = "MIT"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 keywords = ["html", "css", "image", "conversion", "rendering"]
 classifiers = [
     "Development Status :: 3 - Alpha",
@@ -19,11 +19,11 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics :: Graphics Conversion",
     "Topic :: Text Processing :: Markup :: HTML",
     "Topic :: Software Development :: Libraries :: Python Modules",
@@ -39,6 +39,11 @@ dependencies = [
 examples = [
     "pillow>=8.0.0",
 ]
+dev = [
+    "pytest>=7.0",
+    "pytest-cov>=4.0",
+    "numpy>=1.21",
+]
 
 [project.urls]
 Homepage = "https://github.com/francozanardi/html2pic"
@@ -52,7 +57,13 @@ packages = ["src/html2pic"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-addopts = "-v --cov=html2pic --cov-report=term-missing"
+addopts = "-ra"
+filterwarnings = [
+    # html2pic reports unsupported features through Python warnings; tests assert on them explicitly.
+    # Matched by message prefix (e.g. "[CSS_PARSING] ...") rather than by class so that
+    # pytest does not import html2pic before pytest-cov starts measuring.
+    "ignore:\\[[A-Z_]+\\] :UserWarning",
+]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
