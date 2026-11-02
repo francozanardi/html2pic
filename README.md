@@ -229,9 +229,10 @@ h1 {
 - **Compound:** `div.card`, `.btn.primary`, `h1#title`
 - **Descendant:** `.card h1`
 - **Child:** `ul > li`
+- **Pseudo-elements:** `::before` and `::after` (also `:before`/`:after`), with `content` strings, `attr()` and quotes
 
 Specificity follows CSS rules (IDs > classes > tags). Selectors that are not supported yet
-(pseudo-classes, attribute selectors, `+` and `~`) are skipped with a warning.
+(pseudo-classes, other pseudo-elements, attribute selectors, `+` and `~`) are skipped with a warning.
 
 ---
 

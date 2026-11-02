@@ -1,0 +1,15 @@
+<!-- html2pic-test: {"max_diff_ratio": 0.01, "shift_tolerance": 1, "xfail": "generated text is laid out as a separate box instead of flowing inline with the element text (no inline formatting context yet)"} -->
+<style>
+.list { display: flex; flex-direction: column; gap: 4px; font-size: 16px; }
+.item::before { content: "\2022  "; color: #e74c3c; }
+.price::after { content: " USD"; color: #7f8c8d; font-size: 12px; }
+.quote::before { content: open-quote; }
+.quote::after { content: close-quote; }
+.label::after { content: " (" attr(data-count) ")"; font-weight: bold; }
+</style>
+<div class="list">
+  <div class="item">First</div>
+  <div class="price">42</div>
+  <div class="quote">Quoted</div>
+  <div class="label" data-count="7">Items</div>
+</div>

@@ -14,6 +14,7 @@ All notable changes to html2pic will be documented in this file.
 - `data:` URIs for images, fonts and stylesheets.
 - `radial-gradient()`, `conic-gradient()` and `repeating-linear/radial/conic-gradient()` (#5).
 - `overflow`, `overflow-x` and `overflow-y` (clipping) (#5).
+- `::before` / `::after` pseudo-elements with `content` (strings, `attr()`, quotes) (#3).
 - Descendant (`.card h1`), child (`ul > li`) and compound (`div.card#main`) selectors, with
   real CSS specificity. Still-unsupported selectors are skipped with a warning.
 - `background` shorthand (color and/or `url()`/`linear-gradient()` image).

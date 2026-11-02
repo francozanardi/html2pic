@@ -220,7 +220,8 @@ class TestUnsupportedSelectors:
         "selector, reason",
         [
             ("a:hover", "pseudo-classes"),
-            ("p::after", "pseudo-classes"),
+            ("p::first-line", "pseudo-classes"),
+            (".a::after .b", "last part"),
             ("[type=text]", "attribute"),
             ("h1 + p", "adjacent sibling"),
             ("li ~ li", "general sibling"),

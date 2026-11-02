@@ -1,6 +1,6 @@
 """CSS rule representation."""
 from dataclasses import dataclass
-from typing import Dict
+from typing import Dict, Optional
 
 
 @dataclass
@@ -10,3 +10,5 @@ class CSSRule:
     selector: str
     declarations: Dict[str, str]
     specificity: int = 0
+    # 'before' / 'after' for rules that style a pseudo-element of the matched element.
+    pseudo_element: Optional[str] = None

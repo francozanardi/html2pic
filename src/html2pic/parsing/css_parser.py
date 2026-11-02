@@ -28,7 +28,7 @@ class CssParser:
         'color', 'font-family', 'font-size', 'font-weight', 'font-style',
         'text-align', 'line-height', 'text-decoration', 'text-wrap',
         'position', 'left', 'top', 'right', 'bottom',
-        'transform', 'overflow', 'overflow-x', 'overflow-y'
+        'transform', 'overflow', 'overflow-x', 'overflow-y', 'content'
     }
     
     MAX_IMPORT_DEPTH = 16
@@ -128,7 +128,8 @@ class CssParser:
             css_rules.append(CSSRule(
                 selector=parsed.text,
                 declarations=declarations,
-                specificity=specificity_to_int(parsed.specificity)
+                specificity=specificity_to_int(parsed.specificity),
+                pseudo_element=parsed.pseudo_element,
             ))
         return css_rules
     
