@@ -68,6 +68,9 @@ DEFAULT_STYLES = {
     'bottom': 'auto',
     'left': 'auto',
     
+    # Generated content (::before / ::after)
+    'content': 'normal',
+    
     # Overflow
     'overflow-x': 'visible',
     'overflow-y': 'visible',

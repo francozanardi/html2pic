@@ -1,0 +1,14 @@
+<style>
+.badge { position: relative; display: flex; width: 60px; height: 30px; background-color: #3498db; }
+.badge::after { content: ""; position: absolute; top: -6px; right: -6px;
+                width: 12px; height: 12px; border-radius: 50%; background-color: #e74c3c; }
+.bar { display: flex; align-items: center; gap: 4px; }
+.bar::before, .bar::after { content: ""; display: block; flex-grow: 1; height: 2px; background-color: #2c3e50; }
+.bar { width: 120px; }
+.dot { width: 10px; height: 10px; background-color: #f1c40f; }
+.stage { display: flex; flex-direction: column; gap: 12px; padding: 8px; }
+</style>
+<div class="stage">
+  <div class="badge"></div>
+  <div class="bar"><div class="dot"></div></div>
+</div>

@@ -16,6 +16,8 @@ class DOMNode:
     children: List['DOMNode'] = field(default_factory=list)
     parent: Optional['DOMNode'] = None
     computed_styles: Dict[str, Any] = field(default_factory=dict)
+    # 'before' / 'after' for nodes generated from ::before / ::after rules.
+    pseudo_element: Optional[str] = None
     
     def get_classes(self) -> List[str]:
         class_attr = self.attributes.get('class', '')

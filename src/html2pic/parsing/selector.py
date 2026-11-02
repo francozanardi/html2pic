@@ -46,10 +46,11 @@ CHILD = '>'
 _IDENT = r'-?[_a-zA-Z][\w-]*'
 _TOKEN = re.compile(
     rf'(?P<ws>\s+)|(?P<child>>)|(?P<universal>\*)|(?P<tag>{_IDENT})'
+    rf'|(?P<pseudo>::?(?:before|after)\b)'
     rf'|#(?P<id>{_IDENT})|\.(?P<cls>{_IDENT})|(?P<other>.)'
 )
 _UNSUPPORTED_HINTS = {
-    ':': 'pseudo-classes and pseudo-elements',
+    ':': 'pseudo-classes and pseudo-elements other than ::before/::after',
     '[': 'attribute selectors',
     '+': 'the adjacent sibling combinator (+)',
     '~': 'the general sibling combinator (~)',
@@ -88,12 +89,16 @@ class Selector:
 
     text: str
     parts: List[Tuple[Optional[str], CompoundSelector]]
+    # 'before' or 'after' when the selector targets a pseudo-element of the matched element.
+    pseudo_element: Optional[str] = None
 
     @property
     def specificity(self) -> Tuple[int, int, int]:
         ids = sum(len(c.ids) for _, c in self.parts)
         classes = sum(len(c.classes) for _, c in self.parts)
         tags = sum(1 for _, c in self.parts if c.tag not in (None, '*'))
+        if self.pseudo_element:
+            tags += 1
         return ids, classes, tags
 
     def matches(self, node: DOMNode) -> bool:
@@ -136,6 +141,7 @@ def _parse_selector(text: str) -> Selector:
     parts: List[Tuple[Optional[str], CompoundSelector]] = []
     current = CompoundSelector()
     pending: Optional[str] = None
+    pseudo: Optional[str] = None
 
     def flush():
         nonlocal current
@@ -147,6 +153,15 @@ def _parse_selector(text: str) -> Selector:
     for match in _TOKEN.finditer(text):
         kind = match.lastgroup
         value = match.group(kind)
+
+        if pseudo is not None:
+            raise UnsupportedSelectorError(f"a pseudo-element must be the last part of '{text}'")
+
+        if kind == 'pseudo':
+            pseudo = value.lstrip(':').lower()
+            if current.is_empty():
+                current.tag = '*'  # '::after' alone means '*::after'
+            continue
 
         if kind in ('ws', 'child'):
             if not current.is_empty():
@@ -174,7 +189,7 @@ def _parse_selector(text: str) -> Selector:
             current.classes.append(value)
 
     flush()
-    return Selector(text=text, parts=parts)
+    return Selector(text=text, parts=parts, pseudo_element=pseudo)
 
 
 def specificity_to_int(specificity: Tuple[int, int, int]) -> int:

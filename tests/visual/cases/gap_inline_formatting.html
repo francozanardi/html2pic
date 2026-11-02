@@ -1,0 +1,7 @@
+<!-- html2pic-test: {"max_diff_ratio": 0.01, "shift_tolerance": 1, "xfail": "mixed inline content (text + <b>/<span>/<a>) is stacked vertically instead of flowing on one line"} -->
+<style>
+p { font-size: 16px; }
+b { font-weight: bold; }
+.red { color: #c0392b; }
+</style>
+<p>Hello <b>bold</b> and <span class="red">red</span> text</p>

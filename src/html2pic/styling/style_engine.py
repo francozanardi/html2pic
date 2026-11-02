@@ -1,7 +1,9 @@
 """Style computation engine."""
 from typing import Any, Callable, Dict, List, Optional
 
-from ..dom import DOMNode
+import tinycss2
+
+from ..dom import DOMNode, NodeType
 from ..parsing import CSSRule
 from ..fonts import FontRegistry
 from ..warnings import get_warning_collector
@@ -75,8 +77,81 @@ class StyleEngine:
         computed = self._normalize(computed, parent_styles)
         node.computed_styles = computed
         
+        if match_rules and node.is_element():
+            self._attach_pseudo_elements(node, css_rules, computed)
+        
         for child in node.children:
-            self._apply_recursive(child, css_rules, computed)
+            if child.pseudo_element is None:
+                self._apply_recursive(child, css_rules, computed)
+    
+    def _attach_pseudo_elements(self, node: DOMNode, css_rules: List[CSSRule], node_styles: Dict[str, Any]):
+        """Generate ::before / ::after children for ``node`` from the matching rules."""
+        node.children = [child for child in node.children if child.pseudo_element is None]
+        
+        for pseudo in ('before', 'after'):
+            rules = self.cascade_resolver.find_matching_rules(node, css_rules, pseudo)
+            if not rules:
+                continue
+            rules.sort(key=lambda r: r.specificity)
+            
+            styles = DEFAULT_STYLES.copy()
+            styles['display'] = 'inline'  # pseudo-elements are inline by default
+            for prop in self.INHERITED_PROPERTIES:
+                styles[prop] = node_styles[prop]
+            for rule in rules:
+                styles.update(rule.declarations)
+            
+            content = self._resolve_content(styles.get('content', 'normal'), node)
+            if content is None:
+                continue  # 'content: none/normal' generates no box
+            
+            styles = self._normalize(styles, node_styles)
+            if styles['display'] == 'none':
+                continue
+            
+            pseudo_node = DOMNode(
+                node_type=NodeType.ELEMENT,
+                tag=f'::{pseudo}',
+                parent=node,
+                computed_styles=styles,
+                pseudo_element=pseudo,
+            )
+            if content:
+                text = DOMNode(node_type=NodeType.TEXT, text_content=content, parent=pseudo_node)
+                self._apply_recursive(text, [], styles)
+                pseudo_node.children.append(text)
+            
+            if pseudo == 'before':
+                node.children.insert(0, pseudo_node)
+            else:
+                node.children.append(pseudo_node)
+    
+    QUOTES = {'open-quote': '\u201c', 'close-quote': '\u201d', 'no-open-quote': '', 'no-close-quote': ''}
+    
+    def _resolve_content(self, value: str, node: DOMNode) -> Optional[str]:
+        """Evaluate a ``content`` value. Returns None when no box should be generated."""
+        tokens = [
+            t for t in tinycss2.parse_component_value_list(value or '')
+            if t.type not in ('whitespace', 'comment')
+        ]
+        if not tokens or (len(tokens) == 1 and tokens[0].type == 'ident' and tokens[0].lower_value in ('none', 'normal')):
+            return None
+        
+        parts = []
+        for token in tokens:
+            if token.type == 'string':
+                parts.append(token.value)
+            elif token.type == 'function' and token.lower_name == 'attr':
+                names = [a.value for a in token.arguments if a.type == 'ident']
+                parts.append(str(node.attributes.get(names[0], '')) if names else '')
+            elif token.type == 'ident' and token.lower_value in self.QUOTES:
+                parts.append(self.QUOTES[token.lower_value])
+            else:
+                self.warnings.warn_style_not_applied(
+                    'content', token.serialize(), f'<{node.tag}>',
+                    "only strings, attr() and quotes are supported"
+                )
+        return ''.join(parts)
     
     LENGTH_PROPERTIES = (
         'width', 'height', 'min-width', 'max-width', 'min-height', 'max-height',
