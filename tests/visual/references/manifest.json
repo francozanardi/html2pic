@@ -117,6 +117,9 @@
     "gap_wrapped_text_in_centered_flex": {
       "source_sha256": "b468f8ea96b19ec9e3670f15f7daf448ecccd7592c2f54ee4c09d1f70711d1a4"
     },
+    "html_full_document": {
+      "source_sha256": "ffdb18aca5677e2a7bba9e42260aa13d3c1f2b7c8c78f4de7e80dbd5dfa68bdc"
+    },
     "img_tag": {
       "source_sha256": "f925d561c20bfa5851fd15543dd9b69030eff392e5fa683ef184e5af272fba27"
     },
@@ -172,5 +175,5 @@
   "browser": "chromium 153.0.8010.12",
   "template_version": 2,
   "inter_font_sha256": "4989b125924991b90d05b2d16e0e388c48f7d5bb8b30539bbf9c755278d0ccaf",
-  "generated_at": "2026-11-02T15:20:52Z"
+  "generated_at": "2026-11-02T15:22:51Z"
 }

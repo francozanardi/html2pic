@@ -1,3 +1,5 @@
+import pytest
+
 from html2pic.dom import NodeType
 from html2pic.parsing import HtmlParser
 
@@ -57,3 +59,20 @@ class TestHtmlParser:
     def test_has_text_content(self):
         assert parse("<div><p>x</p></div>").has_text_content()
         assert not parse("<div><p></p></div>").has_text_content()
+
+
+class TestNonContentNodes:
+    @pytest.mark.filterwarnings("ignore::bs4.XMLParsedAsHTMLWarning")
+    @pytest.mark.parametrize(
+        "markup",
+        [
+            "<!doctype html>",
+            "<!-- a comment -->",
+            "<![CDATA[x]]>",
+            '<?xml version="1.0"?>',
+        ],
+    )
+    def test_are_not_rendered_as_text(self, markup):
+        root = parse(f"{markup}<p>{markup}hi</p>")
+        assert root.get_all_text() == "hi"
+        assert [c.tag for c in root.children] == ["p"]
