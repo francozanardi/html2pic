@@ -237,3 +237,22 @@ class TestTypography:
         plain = render_rgba("<p>aaaa</p>", "p { font-size: 30px; color: black }")
         underlined = render_rgba("<p>aaaa</p>", "p { font-size: 30px; color: black; text-decoration: underline }")
         assert (underlined[..., 3] > 0).sum() > (plain[..., 3] > 0).sum()
+
+
+@pytest.mark.parametrize(
+    "direction, justify, red_x, blue_x",
+    [
+        ("row-reverse", "flex-start", 70, 50),  # packed to the right, order reversed
+        ("row-reverse", "flex-end", 30, 10),    # packed to the left, order reversed
+        ("row", "flex-start", 10, 30),
+    ],
+)
+def test_reverse_flex_direction(render_rgba, direction, justify, red_x, blue_x):
+    css = (
+        f".r {{ display: flex; flex-direction: {direction}; justify-content: {justify}; width: 80px }}"
+        ".a { width: 20px; height: 20px; background-color: red }"
+        ".b { width: 20px; height: 20px; background-color: blue }"
+    )
+    img = render_rgba('<div class="r"><div class="a"></div><div class="b"></div></div>', css)
+    assert px(img, red_x, 10) == RED
+    assert px(img, blue_x, 10) == BLUE

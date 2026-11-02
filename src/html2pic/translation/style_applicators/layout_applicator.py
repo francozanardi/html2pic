@@ -53,8 +53,17 @@ class LayoutApplicator(StyleApplicator):
     
     def _apply_justify(self, builder: Union[Row, Column], styles: Dict[str, Any]) -> Union[Row, Column]:
         justify = styles.get('justify-content', DEFAULT_STYLES['justify-content'])
+        if self._is_reversed(styles):
+            # Children are laid out in reverse order, so the main-start edge is on the other
+            # side. flex-start/flex-end follow the flex direction and must be mirrored, while
+            # start/end follow the writing mode and keep their meaning.
+            justify = {'flex-start': 'flex-end', 'flex-end': 'flex-start'}.get(justify, justify)
         pictex_value = self.JUSTIFY_MAPPING.get(justify, 'start')
         return builder.justify_content(pictex_value)
+    
+    @staticmethod
+    def _is_reversed(styles: Dict[str, Any]) -> bool:
+        return styles.get('display') == 'flex' and styles.get('flex-direction', '').endswith('-reverse')
     
     def _apply_align(self, builder: Union[Row, Column], styles: Dict[str, Any]) -> Union[Row, Column]:
         align = styles.get('align-items', DEFAULT_STYLES['align-items'])

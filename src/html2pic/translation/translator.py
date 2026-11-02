@@ -114,9 +114,19 @@ class PicTexTranslator:
         if not children:
             return container
         
+        if self._is_reversed_flex(node):
+            # PicTex has no *-reverse directions: lay the items out in reverse order instead
+            # (LayoutApplicator mirrors flex-start/flex-end accordingly).
+            children.reverse()
+        
         if isinstance(container, Row):
             return Row(*children)
         return Column(*children)
+    
+    @staticmethod
+    def _is_reversed_flex(node: DOMNode) -> bool:
+        styles = node.computed_styles
+        return styles.get('display') == 'flex' and styles.get('flex-direction', '').endswith('-reverse')
     
     def _style_text(self, text: Text, node: DOMNode) -> Text:
         parent = node.parent

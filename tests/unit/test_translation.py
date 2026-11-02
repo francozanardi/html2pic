@@ -335,3 +335,20 @@ class TestTypographyRegressions:
     def test_overline_warns(self, warnings_collector):
         apply(TypographyApplicator(), **{"text-decoration": "overline"})
         assert any("overline" in w["message"] for w in warnings_collector.get_warnings())
+
+
+class TestReverseDirections:
+    @pytest.mark.parametrize(
+        "direction, justify, expected",
+        [
+            ("row-reverse", "flex-start", "end"),
+            ("row-reverse", "flex-end", "start"),
+            ("column-reverse", "flex-start", "end"),
+            ("row-reverse", "start", "start"),
+            ("row-reverse", "center", "center"),
+            ("row", "flex-start", "start"),
+        ],
+    )
+    def test_justify_is_mirrored(self, direction, justify, expected):
+        b = apply(LayoutApplicator(), display="flex", **{"flex-direction": direction, "justify-content": justify})
+        assert b.called("justify_content") == [((expected,), {})]
