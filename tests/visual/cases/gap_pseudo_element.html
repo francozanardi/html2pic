@@ -1,0 +1,6 @@
+<!-- html2pic-test: {"xfail": "::before/::after pseudo-elements are not supported (issue #3)"} -->
+<style>
+.box { width: 40px; height: 20px; background-color: #3498db; }
+.box::after { content: ""; display: block; width: 20px; height: 20px; background-color: #e74c3c; }
+</style>
+<div class="box"></div>

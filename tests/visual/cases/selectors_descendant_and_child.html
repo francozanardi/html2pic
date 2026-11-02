@@ -1,0 +1,15 @@
+<style>
+.row { display: flex; gap: 4px; }
+.card { display: flex; gap: 4px; padding: 4px; background-color: #ecf0f1; }
+.cell { width: 20px; height: 20px; background-color: #bdc3c7; }
+.card .cell { background-color: #e74c3c; }
+.card > .direct { background-color: #3498db; }
+.row > .cell { border-radius: 4px; }
+</style>
+<div class="row">
+  <div class="cell"></div>
+  <div class="card">
+    <div class="cell direct"></div>
+    <div class="group"><div class="cell"></div></div>
+  </div>
+</div>

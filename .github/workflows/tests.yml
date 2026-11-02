@@ -29,3 +29,11 @@ jobs:
 
       - name: Run tests
         run: pytest --cov=html2pic --cov-report=term-missing
+
+      - name: Upload visual diffs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-diffs-py${{ matrix.python-version }}
+          path: tests/visual/_output/
+          if-no-files-found: ignore

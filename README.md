@@ -324,6 +324,11 @@ pytest
 Use `pytest --cov=html2pic` for a coverage report. On minimal Linux images, `skia-python`
 needs the EGL/GL system libraries (`apt-get install libegl1 libgl1`).
 
+Besides unit and integration tests, `tests/visual/` compares html2pic's output pixel by
+pixel against reference screenshots taken with Chromium. Adding a rendering test is as easy
+as dropping an HTML file in `tests/visual/cases/` and running
+`python tools/generate_visual_references.py`; see [tests/visual/README.md](tests/visual/README.md).
+
 ---
 
 ## License

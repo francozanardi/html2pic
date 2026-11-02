@@ -43,6 +43,12 @@ dev = [
     "pytest>=7.0",
     "pytest-cov>=4.0",
     "numpy>=1.21",
+    "pillow>=8.0.0",
+]
+# Only needed to regenerate the browser reference images of the visual test suite.
+references = [
+    "playwright>=1.40",
+    "pillow>=8.0.0",
 ]
 
 [project.urls]
@@ -63,6 +69,9 @@ filterwarnings = [
     # Matched by message prefix (e.g. "[CSS_PARSING] ...") rather than by class so that
     # pytest does not import html2pic before pytest-cov starts measuring.
     "ignore:\\[[A-Z_]+\\] :UserWarning",
+]
+markers = [
+    "visual: compares html2pic renders against browser reference images",
 ]
 python_files = ["test_*.py"]
 python_classes = ["Test*"]
