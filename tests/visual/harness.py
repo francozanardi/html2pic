@@ -34,7 +34,7 @@ MANIFEST_PATH = REFERENCES_DIR / "manifest.json"
 
 # Bump whenever PAGE_TEMPLATE (or anything else that changes how references are produced)
 # changes, so every reference is flagged as stale and regenerated.
-TEMPLATE_VERSION = 2
+TEMPLATE_VERSION = 3
 
 DEFAULT_OPTIONS: Dict[str, Any] = {
     # A pixel counts as different when any premultiplied RGBA channel differs by more than this.
@@ -61,8 +61,10 @@ _STYLE_RE = re.compile(r"<style[^>]*>(.*?)</style>", re.DOTALL | re.IGNORECASE)
 # The reference page reproduces html2pic's rendering model:
 #  * html2pic has no user-agent stylesheet: every element starts with margin/padding 0,
 #    16px font size, normal weight and line-height 1.2, so the reset below mimics that.
-#  * The document is wrapped in a flex column that shrinks to its content, which is exactly
-#    what html2pic's synthetic root is (a PicTex Column cropped to its content box).
+#  * The document is wrapped in an inline-block: a block container that shrinks to its
+#    content and starts a block formatting context, like html2pic's root (a document body
+#    cropped to its content: its children's margins collapse with each other, but not
+#    with the image edges).
 #  * The default font is the Inter build bundled with PicTex, embedded as a data URL so the
 #    browser uses the very same font file.
 #  * Optical sizing is disabled: Chromium sets the variable font's 'opsz' axis from the font
@@ -85,8 +87,8 @@ PAGE_TEMPLATE = """<!doctype html>
 html, body {{ margin: 0; padding: 0; background: transparent; }}
 * {{ margin: 0; padding: 0; font-size: inherit; font-weight: inherit; list-style: none; }}
 #__html2pic_capture {{
-  display: inline-flex;
-  flex-direction: column;
+  display: inline-block;
+  vertical-align: top;
   font-family: "Inter";
   font-size: 16px;
   font-weight: 400;

@@ -11,6 +11,7 @@ from .default_styles import DEFAULT_STYLES, INLINE_ELEMENTS
 from .unit_converter import UnitConverter
 from .color_normalizer import ColorNormalizer
 from .cascade_resolver import CascadeResolver
+from .margin_collapse import collapse_margins
 
 
 class StyleEngine:
@@ -47,6 +48,7 @@ class StyleEngine:
         # The top node is the synthetic wrapper created by the HTML parser, not part of
         # the user's document, so CSS rules (e.g. `div { padding: 10px }`) must not match it.
         self._apply_recursive(dom_tree, css_rules, {}, match_rules=False)
+        collapse_margins(dom_tree)
         return dom_tree
     
     def _apply_recursive(

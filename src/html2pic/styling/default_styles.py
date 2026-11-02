@@ -29,6 +29,7 @@ DEFAULT_STYLES = {
     'min-height': 'auto',
     'max-height': 'none',
     'aspect-ratio': 'auto',
+    'box-sizing': 'content-box',
     
     # Box model - spacing
     'padding-top': '0px',

@@ -4,6 +4,15 @@ All notable changes to html2pic will be documented in this file.
 
 ## [Unreleased]
 
+### ⚠️ Behaviour changes
+
+- **`box-sizing` now defaults to `content-box`, like CSS.** `width`/`height` no longer
+  include padding and border, so a box with `width: 400px; padding: 40px` is now 480px wide
+  (as in a browser). Add `* { box-sizing: border-box }` to keep the previous sizing.
+- **Vertical margins collapse** between adjacent blocks and between a block and its first/last
+  child, as in browsers. Flex items and elements with `overflow` other than `visible` keep
+  their children's margins.
+
 ### Added
 - `<style>` elements and `style=""` attributes are applied (#1).
 - `base_url` argument: relative URLs of images, fonts and stylesheets resolve against it (or
@@ -23,6 +32,7 @@ All notable changes to html2pic will be documented in this file.
 - Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.9–3.13.
 
 ### Fixed
+- Negative margins were ignored when no side was positive.
 - Mixed inline content was stacked vertically: `<p>Hello <b>bold</b> text</p>` rendered on
   three lines. Runs of inline content now render as one rich text (PicTex `Text` + `Span`s)
   that wraps as a paragraph, with CSS whitespace collapsing and `<br>` support. Inline

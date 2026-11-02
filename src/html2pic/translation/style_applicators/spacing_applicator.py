@@ -47,7 +47,7 @@ class SpacingApplicator(StyleApplicator):
                     )
                 pixels.append(0)
         
-        if not any(p > 0 for p in pixels):
+        if all(p == 0 for p in pixels):
             return builder
         
         if all(p == pixels[0] for p in pixels):

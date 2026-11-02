@@ -23,7 +23,7 @@ class CssParser:
         'margin', 'margin-top', 'margin-right', 'margin-bottom', 'margin-left',
         'border', 'border-width', 'border-style', 'border-color', 'border-radius',
         'border-top-left-radius', 'border-top-right-radius', 'border-bottom-left-radius', 'border-bottom-right-radius',
-        'min-width', 'max-width', 'min-height', 'max-height', 'aspect-ratio',
+        'min-width', 'max-width', 'min-height', 'max-height', 'aspect-ratio', 'box-sizing',
         'background', 'background-color', 'background-image', 'background-size', 'box-shadow', 'text-shadow',
         'color', 'font-family', 'font-size', 'font-weight', 'font-style',
         'text-align', 'line-height', 'text-decoration', 'text-wrap',
