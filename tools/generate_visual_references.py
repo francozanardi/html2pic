@@ -96,6 +96,11 @@ def main() -> int:
                 broken = page.evaluate("[...document.images].filter(i => !i.complete || !i.naturalWidth).map(i => i.src)")
                 if broken:
                     raise RuntimeError(f"{case.name}: images failed to load: {broken}")
+                box = page.locator("#__html2pic_capture").bounding_box()
+                if not box or box["width"] < 1 or box["height"] < 1:
+                    raise RuntimeError(
+                        f"{case.name}: the case renders nothing ({box}); give its content a size"
+                    )
                 png = page.locator("#__html2pic_capture").screenshot(omit_background=True, animations="disabled")
                 Image.open(io.BytesIO(png)).convert("RGBA").save(case.reference_path, optimize=True)
                 entries[case.name] = {"source_sha256": case.source_hash}

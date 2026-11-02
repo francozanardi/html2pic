@@ -1,0 +1,17 @@
+<style>
+.stage { width: 60px; background-color: #ecf0f1; }
+.parent { margin-top: 5px; margin-bottom: 4px; background-color: #3498db; }
+.child { height: 10px; margin: 15px 0 20px 0; background-color: #e74c3c; }
+.padded { padding: 2px 0; background-color: #2ecc71; }
+.clip { overflow: hidden; background-color: #9b59b6; }
+.sep { height: 6px; background-color: #34495e; }
+</style>
+<div class="stage">
+  <div class="sep"></div>
+  <div class="parent"><div class="child"></div></div>
+  <div class="sep"></div>
+  <div class="padded"><div class="child"></div></div>
+  <div class="sep"></div>
+  <div class="clip"><div class="child"></div></div>
+  <div class="sep"></div>
+</div>

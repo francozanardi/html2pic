@@ -111,7 +111,8 @@ html2pic supports a comprehensive subset of modern CSS. Here's what you can use:
 | `min-height`, `max-height` | `px`, `%` | Size constraints |
 | `aspect-ratio` | Number or ratio (e.g., `16/9`) | Maintain proportions |
 | `padding` | `px`, `em`, `rem` | Shorthand and individual sides |
-| `margin` | `px`, `em`, `rem` | Shorthand and individual sides |
+| `margin` | `px`, `em`, `rem` | Shorthand and individual sides; negative values; vertical margins collapse like in browsers |
+| `box-sizing` | `content-box` (default), `border-box` | `content-box` with `%` sizes is approximated as `border-box` (warning) |
 | `border` | Width, style, color | Styles: `solid`, `dashed`, `dotted` |
 | `border-radius` | `px`, `%` | Shorthand or individual corners |
 

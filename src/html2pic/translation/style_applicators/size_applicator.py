@@ -28,8 +28,9 @@ class SizeApplicator(StyleApplicator):
         if width == 'auto' and height == 'auto':
             return builder
         
-        width_val = self._parse_dimension(width)
-        height_val = self._parse_dimension(height)
+        extra_w, extra_h = self._box_extras(styles)
+        width_val = self._to_border_box(self._parse_dimension(width), extra_w, 'width')
+        height_val = self._to_border_box(self._parse_dimension(height), extra_h, 'height')
         
         if width_val is not None or height_val is not None:
             builder = builder.size(width_val, height_val)
@@ -44,10 +45,12 @@ class SizeApplicator(StyleApplicator):
             ('max-height', DEFAULT_STYLES['max-height'], 'max_height'),
         ]
         
+        extra_w, extra_h = self._box_extras(styles)
         for css_prop, default, method in constraints:
             value = styles.get(css_prop, default)
             if value != default:
-                parsed = self._parse_constraint(value)
+                extra = extra_w if css_prop.endswith('width') else extra_h
+                parsed = self._to_border_box(self._parse_constraint(value), extra, css_prop)
                 if parsed is not None:
                     builder = getattr(builder, method)(parsed)
         
@@ -97,6 +100,36 @@ class SizeApplicator(StyleApplicator):
                 builder = builder.align_self(mapping[align_self])
         
         return builder
+    
+    def _box_extras(self, styles: Dict[str, Any]):
+        """Padding + border to add to content-box sizes (PicTex sizes are border-box)."""
+        if styles.get('box-sizing', DEFAULT_STYLES['box-sizing']).strip().lower() == 'border-box':
+            return 0.0, 0.0
+        
+        def px(prop: str) -> float:
+            value = styles.get(prop, '0px')
+            try:
+                return float(value[:-2]) if value.endswith('px') else 0.0
+            except ValueError:
+                return 0.0
+        
+        border = px('border-width')
+        return (
+            px('padding-left') + px('padding-right') + 2 * border,
+            px('padding-top') + px('padding-bottom') + 2 * border,
+        )
+    
+    def _to_border_box(self, value: Optional[Union[float, str]], extra: float, prop: str):
+        if value is None or not extra:
+            return value
+        if isinstance(value, (int, float)):
+            return value + extra
+        self.warnings.warn_style_not_applied(
+            prop, str(value), 'element',
+            "box-sizing: content-box can't be applied to percentage/keyword sizes; "
+            "the size includes padding and border (border-box)"
+        )
+        return value
     
     def _parse_dimension(self, value: str) -> Optional[Union[float, str]]:
         if value == 'auto':
