@@ -12,6 +12,8 @@ All notable changes to html2pic will be documented in this file.
   images/fonts, plus ready-made `local_fetcher`, `http_fetcher` and `chain_fetchers` in
   `html2pic.fetchers`. Nothing is fetched without it.
 - `data:` URIs for images, fonts and stylesheets.
+- `radial-gradient()`, `conic-gradient()` and `repeating-linear/radial/conic-gradient()` (#5).
+- `overflow`, `overflow-x` and `overflow-y` (clipping) (#5).
 - Descendant (`.card h1`), child (`ul > li`) and compound (`div.card#main`) selectors, with
   real CSS specificity. Still-unsupported selectors are skipped with a warning.
 - `background` shorthand (color and/or `url()`/`linear-gradient()` image).
@@ -20,6 +22,10 @@ All notable changes to html2pic will be documented in this file.
 - Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.9–3.13.
 
 ### Fixed
+- Linear gradients now use the exact CSS geometry: the gradient line length depends on the
+  box's aspect ratio, corner directions (`to top right`) are perpendicular to the diagonal,
+  px stop positions and stops outside 0–100% work, and colors interpolate in premultiplied
+  space. A `background-color` is now painted underneath a gradient instead of being replaced.
 - `@media` blocks were parsed as regular rules with a bogus selector; they are now skipped
   with a warning.
 - Remote `@font-face` URLs were documented as supported but silently ignored.

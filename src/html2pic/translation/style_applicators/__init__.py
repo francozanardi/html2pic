@@ -9,6 +9,7 @@ from .layout_applicator import LayoutApplicator
 from .typography_applicator import TypographyApplicator
 from .positioning_applicator import PositioningApplicator
 from .transform_applicator import TransformApplicator
+from .overflow_applicator import OverflowApplicator
 
 __all__ = [
     "StyleApplicator",
@@ -21,4 +22,5 @@ __all__ = [
     "TypographyApplicator",
     "PositioningApplicator",
     "TransformApplicator",
+    "OverflowApplicator",
 ]

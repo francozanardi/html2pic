@@ -127,21 +127,40 @@ html2pic supports a comprehensive subset of modern CSS. Here's what you can use:
 |----------|--------|-------|
 | `background` | Color and/or image | Shorthand for `background-color` + `background-image` |
 | `background-color` | Hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, named | Alpha channel supported |
-| `background-image` | `url()`, `linear-gradient()` | See gradients section below |
+| `background-image` | `url()`, `linear-gradient()`, `radial-gradient()`, `conic-gradient()`, `repeating-*` | See gradients section below |
 | `background-size` | `cover`, `contain`, `tile` | For images |
 | `box-shadow` | `offset-x offset-y blur color` | RGBA supported |
+| `overflow`, `overflow-x`, `overflow-y` | `visible`, `hidden`, `clip`, `scroll`, `auto` | Non-visible values clip to the padding box |
 
-**Linear Gradients:**
+**Gradients:**
+
+Linear, radial and conic gradients (and their `repeating-*` variants) follow the CSS
+geometry, verified pixel by pixel against Chromium:
+
 ```css
-/* Angle-based */
-background-image: linear-gradient(135deg, #667eea, #764ba2);
+/* Linear: angles, sides and corners */
+background: linear-gradient(135deg, #667eea, #764ba2);
+background: linear-gradient(to top right, red, blue);
 
-/* Direction keywords */
-background-image: linear-gradient(to right, red, blue);
+/* Color stops: %, px, double positions, hard stops */
+background: linear-gradient(90deg, #c0392b 0 33%, #ecf0f1 33% 66%, #2980b9 66%);
 
-/* Color stops */
-background-image: linear-gradient(90deg, #ff0000 0%, #00ff00 50%, #0000ff 100%);
+/* Radial: shape, size keyword or explicit size, position */
+background: radial-gradient(circle closest-side at 20% 30%, white, black);
+background: radial-gradient(40px 20px at right bottom, #f1c40f, transparent);
+
+/* Conic */
+background: conic-gradient(from 45deg at 30% 40%, red, yellow, lime, red);
+
+/* Repeating */
+background: repeating-linear-gradient(45deg, #333 0 8px, #eee 8px 16px);
+
+/* A background color is painted underneath the gradient */
+background: #f1c40f linear-gradient(transparent, rgba(0, 0, 255, 0.8));
 ```
+
+Colors interpolate in premultiplied space like in browsers, so fading to `transparent`
+doesn't go through grey. Color interpolation hints (`red, 30%, blue`) are not supported.
 
 ### Typography
 
@@ -341,12 +360,11 @@ html2pic supports a subset of CSS, several features are not implemented:
 | CSS Grid | ❌ Not supported | Use Flexbox |
 | Transforms (rotate, scale, skew) | ❌ Not supported | Only `translate()` works |
 | Animations & Transitions | ❌ Not supported | Generate static images |
-| Radial/Conic Gradients | ❌ Not supported | Use `linear-gradient()` |
 | Pseudo-classes (`:hover`, `:nth-child`), attribute selectors, `+`/`~` | ❌ Not supported | Use classes |
 | Percentage `padding`, `margin`, `gap` | ❌ Not supported | Use `px`, `em` or `rem` |
 | `@media` rules and media-conditional stylesheets | ❌ Skipped with a warning | — |
 | Media Queries | ❌ Not supported | Set explicit dimensions |
-| Overflow & Scrolling | ❌ Not supported | Content must fit container |
+| Single-axis clipping (`overflow-x: clip` + `overflow-y: visible`) | ⚠️ Clips both axes | Use `overflow: hidden` |
 
 ---
 

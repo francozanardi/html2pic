@@ -1,0 +1,12 @@
+<!-- html2pic-test: {"pixel_threshold": 24} -->
+<style>
+.grid { display: flex; flex-wrap: wrap; width: 250px; gap: 4px; }
+.g { width: 120px; height: 60px; }
+.a { background: radial-gradient(circle closest-side at 20% 30%, red, blue); }
+.b { background: radial-gradient(farthest-side at left, red, blue); }
+.c { background: radial-gradient(30px 10px at 70% 50%, red, blue); }
+.d { background: radial-gradient(closest-corner at 30px 20px, red, blue); }
+.e { background: radial-gradient(circle farthest-corner at right bottom, red, blue); }
+.f { background: radial-gradient(25px, red, blue); }
+</style>
+<div class="grid"><div class="g a"></div><div class="g b"></div><div class="g c"></div><div class="g d"></div><div class="g e"></div><div class="g f"></div></div>

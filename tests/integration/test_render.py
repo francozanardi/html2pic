@@ -190,9 +190,9 @@ class TestBackgroundShorthand:
         assert px(img, 98, 5)[2] > 240
 
     def test_unsupported_image_warns(self, warnings_collector):
-        css = ".g { width: 10px; height: 10px; background: radial-gradient(red, blue) }"
+        css = ".g { width: 10px; height: 10px; background-color: red; background-image: image-set(url(a.png) 1x) }"
         Html2Pic('<div class="g"></div>', css).render()
-        assert any("radial-gradient" in w["message"] for w in warnings_collector.get_warnings())
+        assert any("image-set" in w["message"] for w in warnings_collector.get_warnings())
 
 
 class TestColors:

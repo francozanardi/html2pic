@@ -20,6 +20,7 @@ from .style_applicators import (
     TypographyApplicator,
     PositioningApplicator,
     TransformApplicator,
+    OverflowApplicator,
 )
 
 
@@ -68,6 +69,7 @@ class PicTexTranslator:
             TypographyApplicator(self.font_registry, self.loader),
             PositioningApplicator(),
             TransformApplicator(),
+            OverflowApplicator(),
         ]
     
     def _translate_node(self, node: DOMNode) -> Optional[Element]:

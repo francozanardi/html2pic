@@ -148,25 +148,29 @@ class TestBackgroundApplicator:
         b = apply(BackgroundApplicator(), **{"background-image": "url('bg.png')", "background-size": "contain"})
         assert b.called("background_image") == [(("bg.png", "contain"), {})]
 
-    def test_linear_gradient(self):
-        (args, _), = apply(BackgroundApplicator(), **{"background-image": "linear-gradient(to right, red, blue)"}).called("background_color")
-        assert type(args[0]).__name__ == "LinearGradient"
-
     @pytest.mark.parametrize(
-        "angle, start, end",
-        [("180deg", (0.5, 0.0), (0.5, 1.0)), ("90deg", (0.0, 0.5), (1.0, 0.5)), ("0deg", (0.5, 1.0), (0.5, 0.0))],
+        "value, cls",
+        [
+            ("linear-gradient(to right, red, blue)", "CssLinearGradient"),
+            ("radial-gradient(circle, red, blue)", "CssRadialGradient"),
+            ("conic-gradient(red, blue)", "CssConicGradient"),
+            ("repeating-linear-gradient(red 0 10px, blue 10px 20px)", "CssLinearGradient"),
+        ],
     )
-    def test_angle_to_points(self, angle, start, end):
-        got_start, got_end = BackgroundApplicator()._angle_to_points(angle)
-        assert got_start == pytest.approx(start, abs=1e-9)
-        assert got_end == pytest.approx(end, abs=1e-9)
+    def test_gradients(self, value, cls):
+        (args, _), = apply(BackgroundApplicator(), **{"background-image": value}).called("background_color")
+        assert type(args[0]).__name__ == cls
 
-    @pytest.mark.parametrize(
-        "stop, index, total, expected",
-        [("red 25%", 0, 3, ("red", 0.25)), ("red", 1, 3, ("red", 0.5)), ("rgb(1, 2, 3) 100%", 0, 2, ("rgb(1, 2, 3)", 1.0))],
-    )
-    def test_color_stops(self, stop, index, total, expected):
-        assert BackgroundApplicator()._parse_color_stop(stop, index, total) == expected
+    def test_color_is_layered_under_gradient(self):
+        b = apply(BackgroundApplicator(), **{"background-image": "linear-gradient(red, blue)", "background-color": "#00ff00"})
+        (args, _), = b.called("background_color")
+        assert type(args[0]).__name__ == "BackgroundLayers"
+
+    def test_invalid_gradient_warns_and_keeps_color(self, warnings_collector):
+        b = apply(BackgroundApplicator(), **{"background-image": "linear-gradient(sideways, red, blue)", "background-color": "#00ff00"})
+        (args, _), = b.called("background_color")
+        assert type(args[0]).__name__ == "SolidColor"
+        assert any("sideways" in w["message"] for w in warnings_collector.get_warnings())
 
     def test_gradient_with_single_color_is_ignored(self):
         assert apply(BackgroundApplicator(), **{"background-image": "linear-gradient(red)"}).called("background_color") == []
