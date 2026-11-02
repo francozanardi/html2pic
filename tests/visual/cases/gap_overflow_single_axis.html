@@ -1,0 +1,7 @@
+<!-- html2pic-test: {"xfail": "overflow: clip on one axis with visible on the other clips a single axis in browsers; PicTex can only clip both"} -->
+<style>
+.stage { height: 100px; }
+.clip { width: 40px; height: 40px; overflow-x: clip; background-color: #ecf0f1; }
+.big { width: 80px; height: 80px; background-color: #e74c3c; }
+</style>
+<div class="stage"><div class="clip"><div class="big"></div></div></div>

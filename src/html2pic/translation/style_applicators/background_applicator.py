@@ -1,162 +1,62 @@
 """Background style application."""
-from typing import Dict, Any, List, Tuple, Optional
+from typing import Any, Dict, Optional
 
-from pictex import Element, SolidColor, LinearGradient
+from pictex import Element, SolidColor
 
 from .base_applicator import StyleApplicator
+from ..gradients import BackgroundLayers, GradientError, is_gradient, parse_gradient
 from ...warnings import get_warning_collector
-from ...styling import DEFAULT_STYLES, ColorNormalizer
+from ...styling import DEFAULT_STYLES
 
 
 class BackgroundApplicator(StyleApplicator):
-    """Applies background-color and background-image."""
+    """Applies background-color and background-image (url() images and CSS gradients)."""
 
     def __init__(self, loader=None):
         self.warnings = get_warning_collector()
         self.loader = loader
-        self._color_normalizer = ColorNormalizer()
-    
+
     def apply(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        builder = self._apply_background_color(builder, styles)
-        builder = self._apply_background_image(builder, styles)
-        return builder
-    
-    def _apply_background_color(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        bg_color = styles.get('background-color', DEFAULT_STYLES['background-color'])
-        if bg_color != 'transparent':
+        color = self._background_color(styles)
+        bg_image = styles.get('background-image', DEFAULT_STYLES['background-image']).strip()
+
+        if is_gradient(bg_image):
             try:
-                color = SolidColor.from_str(bg_color)
-                builder = builder.background_color(color)
-            except Exception as e:
-                self.warnings.warn_unexpected_error(f"Failed to apply background-color '{bg_color}': {e}")
-        return builder
-    
-    def _apply_background_image(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        bg_image = styles.get('background-image', DEFAULT_STYLES['background-image'])
-        
-        if bg_image == 'none':
-            return builder
-        
-        if bg_image.startswith('linear-gradient('):
-            gradient = self._parse_gradient(bg_image)
-            if gradient:
-                builder = builder.background_color(gradient)
-        elif bg_image.startswith('url('):
+                gradient = parse_gradient(bg_image)
+            except GradientError as e:
+                self.warnings.warn_style_not_applied('background-image', bg_image, 'element', str(e))
+            else:
+                # PicTex has a single background paint, so the color is composited under the gradient.
+                return builder.background_color(BackgroundLayers(color, gradient) if color else gradient)
+
+        if color is not None:
+            builder = builder.background_color(color)
+
+        if bg_image.startswith('url('):
             url = self._extract_url(bg_image)
             if url and self.loader is not None:
                 url = self.loader.localize(url, purpose='background image')
             if url:
                 size = styles.get('background-size', DEFAULT_STYLES['background-size'])
                 builder = builder.background_image(url, size)
-        else:
+        elif bg_image != 'none' and not is_gradient(bg_image):
             self.warnings.warn_style_not_applied(
                 'background-image', bg_image, 'element',
-                "Only url() and linear-gradient() are supported."
+                "Only url() images and CSS gradients are supported."
             )
-        
+
         return builder
-    
-    def _parse_gradient(self, gradient_str: str) -> Optional[LinearGradient]:
+
+    def _background_color(self, styles: Dict[str, Any]) -> Optional[SolidColor]:
+        bg_color = styles.get('background-color', DEFAULT_STYLES['background-color'])
+        if bg_color == 'transparent':
+            return None
         try:
-            content = gradient_str[16:-1].strip()
-            parts = self._split_gradient_parts(content)
-            
-            direction_mapping = {
-                'to right': ((0.0, 0.5), (1.0, 0.5)),
-                'to left': ((1.0, 0.5), (0.0, 0.5)),
-                'to bottom': ((0.5, 0.0), (0.5, 1.0)),
-                'to top': ((0.5, 1.0), (0.5, 0.0)),
-                'to bottom right': ((0.0, 0.0), (1.0, 1.0)),
-                'to bottom left': ((1.0, 0.0), (0.0, 1.0)),
-                'to top right': ((0.0, 1.0), (1.0, 0.0)),
-                'to top left': ((1.0, 1.0), (0.0, 0.0)),
-            }
-            
-            start_point = (0.5, 0.0)
-            end_point = (0.5, 1.0)
-            color_parts = parts
-            
-            if parts:
-                first_part = parts[0].strip().lower()
-                
-                if first_part in direction_mapping:
-                    start_point, end_point = direction_mapping[first_part]
-                    color_parts = parts[1:]
-                elif first_part.endswith('deg'):
-                    start_point, end_point = self._angle_to_points(first_part)
-                    color_parts = parts[1:]
-            
-            colors = []
-            stops = []
-            for i, part in enumerate(color_parts):
-                color_str, position = self._parse_color_stop(part.strip(), i, len(color_parts))
-                try:
-                    color = SolidColor.from_str(self._color_normalizer.normalize(color_str))
-                    colors.append(color)
-                    stops.append(position)
-                except Exception as e:
-                    self.warnings.warn_unexpected_error(f"Failed to parse color stop '{color_str}': {e}")
-            
-            if len(colors) >= 2:
-                return LinearGradient(colors, stops, start_point, end_point)
+            return SolidColor.from_str(bg_color)
         except Exception as e:
-            self.warnings.warn_unexpected_error(f"Failed to parse gradient '{gradient_str}': {e}")
-        return None
-    
-    def _angle_to_points(self, angle_str: str) -> Tuple[Tuple[float, float], Tuple[float, float]]:
-        import math
-        try:
-            angle = float(angle_str[:-3])
-            rad = math.radians(angle - 90)
-            
-            x = 0.5 + 0.5 * math.cos(rad)
-            y = 0.5 + 0.5 * math.sin(rad)
-            
-            start_x = 0.5 - 0.5 * math.cos(rad)
-            start_y = 0.5 - 0.5 * math.sin(rad)
-            
-            return ((start_x, start_y), (x, y))
-        except:
-            return ((0.5, 0.0), (0.5, 1.0))
-    
-    def _split_gradient_parts(self, content: str) -> List[str]:
-        parts = []
-        current = ''
-        paren_depth = 0
-        
-        for char in content:
-            if char == '(':
-                paren_depth += 1
-                current += char
-            elif char == ')':
-                paren_depth -= 1
-                current += char
-            elif char == ',' and paren_depth == 0:
-                parts.append(current.strip())
-                current = ''
-            else:
-                current += char
-        
-        if current.strip():
-            parts.append(current.strip())
-        
-        return parts
-    
-    def _parse_color_stop(self, stop_str: str, index: int, total: int) -> Tuple[str, float]:
-        parts = stop_str.rsplit(None, 1)
-        
-        if len(parts) == 2 and (parts[1].endswith('%') or parts[1].endswith('px')):
-            color = parts[0]
-            if parts[1].endswith('%'):
-                position = float(parts[1][:-1]) / 100
-            else:
-                position = index / max(1, total - 1)
-        else:
-            color = stop_str
-            position = index / max(1, total - 1)
-        
-        return color, position
-    
+            self.warnings.warn_unexpected_error(f"Failed to apply background-color '{bg_color}': {e}")
+            return None
+
     def _extract_url(self, url_str: str) -> str:
         content = url_str[4:-1].strip()
         if (content.startswith('"') and content.endswith('"')) or \

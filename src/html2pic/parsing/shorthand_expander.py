@@ -51,7 +51,7 @@ class ShorthandExpander:
     }
     BACKGROUND_IMAGE_FUNCTIONS = (
         'url(', 'linear-gradient(', 'radial-gradient(', 'conic-gradient(',
-        'repeating-linear-gradient(', 'repeating-radial-gradient(',
+        'repeating-linear-gradient(', 'repeating-radial-gradient(', 'repeating-conic-gradient(',
     )
 
     def expand_background(self, value: str) -> Dict[str, str]:
@@ -79,6 +79,10 @@ class ShorthandExpander:
                     declarations['background-color'] = part
 
         return declarations
+
+    def expand_overflow(self, value: str) -> Dict[str, str]:
+        values = value.split() or ['visible']
+        return {'overflow-x': values[0], 'overflow-y': values[1] if len(values) > 1 else values[0]}
 
     def _looks_like_color(self, token: str) -> bool:
         if token in self.BACKGROUND_IGNORED_KEYWORDS or '/' in token:

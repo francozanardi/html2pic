@@ -68,6 +68,10 @@ DEFAULT_STYLES = {
     'bottom': 'auto',
     'left': 'auto',
     
+    # Overflow
+    'overflow-x': 'visible',
+    'overflow-y': 'visible',
+    
     # Transforms
     'transform': 'none',
 }

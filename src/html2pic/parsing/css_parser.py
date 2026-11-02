@@ -28,7 +28,7 @@ class CssParser:
         'color', 'font-family', 'font-size', 'font-weight', 'font-style',
         'text-align', 'line-height', 'text-decoration', 'text-wrap',
         'position', 'left', 'top', 'right', 'bottom',
-        'transform'
+        'transform', 'overflow', 'overflow-x', 'overflow-y'
     }
     
     MAX_IMPORT_DEPTH = 16
@@ -172,6 +172,8 @@ class CssParser:
                 declarations.update(self.shorthand_expander.expand_margin(prop_value))
             elif prop_name == 'border':
                 declarations.update(self.shorthand_expander.expand_border(prop_value))
+            elif prop_name == 'overflow':
+                declarations.update(self.shorthand_expander.expand_overflow(prop_value))
             elif prop_name == 'background':
                 declarations.update(self.shorthand_expander.expand_background(prop_value))
             else:

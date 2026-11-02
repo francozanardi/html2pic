@@ -1,0 +1,15 @@
+<!-- html2pic-test: {"max_diff_ratio": 0.02} -->
+<style>
+.row { display: flex; gap: 6px; align-items: flex-start; }
+.clip { width: 40px; height: 40px; background-color: #ecf0f1; }
+.big { width: 80px; height: 80px; background-color: #e74c3c; }
+.rounded { overflow: hidden; border-radius: 12px; }
+.both { overflow: hidden clip; }
+.padded { overflow: hidden; padding: 6px; box-sizing: border-box; }
+.shifted { position: relative; left: 10px; top: 10px; }
+</style>
+<div class="row">
+  <div class="clip rounded"><div class="big"></div></div>
+  <div class="clip both"><div class="big"></div></div>
+  <div class="clip padded"><div class="big shifted"></div></div>
+</div>
