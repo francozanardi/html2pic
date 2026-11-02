@@ -41,6 +41,6 @@ class DOMNode:
     
     def get_all_text(self) -> str:
         if self.is_text():
-            return self.text_content
-        text_parts = [child.get_all_text() for child in self.children if child.get_all_text()]
-        return ' '.join(text_parts)
+            return self.text_content.strip()
+        text_parts = [child.get_all_text() for child in self.children]
+        return ' '.join(part for part in text_parts if part)

@@ -4,6 +4,9 @@ from typing import List, Optional
 
 from bs4 import BeautifulSoup, NavigableString, Tag
 from bs4.element import PreformattedString
+import re
+
+_WHITESPACE = re.compile(r'[ \t\n\r\f]+')
 
 from ..dom import DOMNode, NodeType
 from ..warnings import get_warning_collector
@@ -90,14 +93,16 @@ class HtmlParser:
             return None
         
         if isinstance(node, NavigableString):
-            text = str(node).strip()
-            if text:
-                return DOMNode(
-                    node_type=NodeType.TEXT,
-                    text_content=text,
-                    parent=parent
-                )
-            return None
+            # Whitespace is collapsed, not removed: spaces between inline elements matter
+            # ("<b>a</b> <i>b</i>"). The translator drops whitespace where CSS would.
+            text = _WHITESPACE.sub(' ', str(node))
+            if not text:
+                return None
+            return DOMNode(
+                node_type=NodeType.TEXT,
+                text_content=text,
+                parent=parent
+            )
         
         if isinstance(node, Tag):
             tag_name = node.name.lower()

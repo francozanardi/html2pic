@@ -138,8 +138,8 @@
     "gap_grid": {
       "source_sha256": "7293bf3d3d75ece6e720d55e853a81a079c8ab01b7c6864cb0f0c7dc6d09b717"
     },
-    "gap_inline_formatting": {
-      "source_sha256": "88e9fe6df25e8ba121255f2a11bd959f9da6e8ca12676b8b84e1f8709dd0390a"
+    "gap_mixed_font_sizes_in_line": {
+      "source_sha256": "230942fe50c31ac6a1eb6c8f5ec2e7a442e3cd525566a343c62bf463e8ed5937"
     },
     "gap_overflow_single_axis": {
       "source_sha256": "d83eef5e68fdff67914da7252d47df4dd1ea6f9f1c48eb987d5a98473c07a93c"
@@ -184,7 +184,7 @@
       "source_sha256": "3695ecbf02b634e66e528c09e0c4c78075fba137a8a5fd272d6cc32538533c57"
     },
     "pseudo_text_content": {
-      "source_sha256": "ccb612f85e1398cb6a565042a9eec9c3f4df447cd41cc13d10a603538c26a070"
+      "source_sha256": "eefd821fb480f1b3020ac26cce83f71775fb588f5cbcc120e050f545fbe874c3"
     },
     "selectors_descendant_and_child": {
       "source_sha256": "1ab3488505f53b3934b09037654a9d91dd68e2a3147a3e0e842bace10ed0884c"
@@ -216,6 +216,15 @@
     "text_inherited_color_and_units": {
       "source_sha256": "919d74321bbcfc1d577f47bd78b228802fcd82cd5f3819628dcf91e2417cc08e"
     },
+    "text_inline_atomic": {
+      "source_sha256": "06ee12bb758be96c33b948027885c9c3d612d53c9e627a41ba65cf8719c31ca8"
+    },
+    "text_inline_formatting": {
+      "source_sha256": "ee3c7fd54ddde85edda472803d6234a08c40a22ef8a7649d86cda21403b17c6a"
+    },
+    "text_inline_mixed": {
+      "source_sha256": "bba355a1f12494288d3887d2a167d11c88d239154a3999bc5999b80205884e48"
+    },
     "text_italic": {
       "source_sha256": "4c3ef95b4a11796a8b65aa6148bac0665b3d0629249a17c92d71f8db01f6a4b2"
     },
@@ -235,5 +244,5 @@
   "browser": "chromium 153.0.8010.12",
   "template_version": 2,
   "inter_font_sha256": "4989b125924991b90d05b2d16e0e388c48f7d5bb8b30539bbf9c755278d0ccaf",
-  "generated_at": "2026-11-02T15:47:36Z"
+  "generated_at": "2026-11-02T15:51:38Z"
 }

@@ -22,15 +22,16 @@ class TestHtmlParser:
         assert all(c.parent is div for c in div.children)
         assert div.parent is root
 
-    def test_text_nodes_are_stripped(self):
-        root = parse("<p>   hello   </p>")
+    def test_whitespace_in_text_is_collapsed_not_stripped(self):
+        root = parse("<p>   hello \n\t world   </p>")
         text = root.children[0].children[0]
         assert text.node_type == NodeType.TEXT
-        assert text.text_content == "hello"
+        assert text.text_content == " hello world "
 
-    def test_whitespace_only_text_is_dropped(self):
+    def test_whitespace_between_elements_is_kept(self):
+        # Needed for "<b>a</b> <i>b</i>"; the translator drops it where CSS would.
         root = parse("<div>\n   <p>x</p>\n   </div>")
-        assert [c.tag for c in root.children[0].children] == ["p"]
+        assert [c.tag if c.is_element() else repr(c.text_content) for c in root.children[0].children] == ["' '", "p", "' '"]
 
     def test_class_list_is_joined_into_string(self):
         root = parse('<div class="a  b c"></div>')

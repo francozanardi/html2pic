@@ -202,6 +202,18 @@ h1 {
 - Fallback chains (prioritizes @font-face, then system fonts)
 - Relative paths (resolved against `base_url`, or the stylesheet that declares them), absolute paths, `data:` URIs and, with a `fetcher`, remote URLs
 
+### Inline content
+
+Text and inline elements (`<b>`, `<span>`, `<a>`, `<em>`, `<br>`, inline `::before`/`::after`,
+...) flow together in lines and wrap as a paragraph, with whitespace collapsed like in
+browsers. Inline elements can change typography (color, font, size, weight, style,
+decoration, shadow). An inline element that needs a box of its own (background, padding,
+border, size) or an image inside text is laid out in a wrapping row next to the text
+instead of on the text baseline.
+
+html2pic has no user-agent stylesheet: `<b>`, `<h1>`, etc. have no default styles, so set
+them in your CSS (`b { font-weight: bold }`).
+
 ### Positioning & Transforms
 
 | Property | Values | Notes |
@@ -365,6 +377,8 @@ html2pic supports a subset of CSS, several features are not implemented:
 | Percentage `padding`, `margin`, `gap` | ❌ Not supported | Use `px`, `em` or `rem` |
 | `@media` rules and media-conditional stylesheets | ❌ Skipped with a warning | — |
 | Media Queries | ❌ Not supported | Set explicit dimensions |
+| Inline boxes with background/padding, images inside text | ⚠️ Laid out in a row next to the text | Keep decorated inline content short |
+| Mixed font sizes in one line | ⚠️ Line height doesn't grow to fit them | Set a `line-height` large enough |
 | Single-axis clipping (`overflow-x: clip` + `overflow-y: visible`) | ⚠️ Clips both axes | Use `overflow: hidden` |
 
 ---
