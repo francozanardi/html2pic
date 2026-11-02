@@ -10,7 +10,7 @@ All notable changes to html2pic will be documented in this file.
 - `background` shorthand (color and/or `url()`/`linear-gradient()` image).
 - `hsl()`/`hsla()` colors and modern `rgb()` syntax (`rgb(255 0 0 / 50%)`, percentage channels).
 - `text-decoration: underline | line-through`.
-- Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.9–3.13.
+- Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.10–3.13.
 
 ### Fixed
 - `rem` units were never converted.
@@ -24,7 +24,8 @@ All notable changes to html2pic will be documented in this file.
 - Debug output was printed to stdout for every element with a `transform`.
 
 ### Changed
-- `requires-python` raised to `>=3.9` (required by PicTex 2.x).
+- `requires-python` raised to `>=3.10`. Python 3.9 reached end of life in October 2025, PicTex 2.x
+  needs at least 3.9 and current tinycss2 releases need 3.10.
 - Percentage `padding`, `margin` and `gap` now emit a warning instead of being dropped silently.
 
 ## [0.2.2] - 2026-01-28
