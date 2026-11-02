@@ -1,5 +1,5 @@
 """Border style application."""
-from typing import Dict, Any
+from typing import Dict, Any, Union
 
 from pictex import Element, SolidColor, BorderStyle
 
@@ -41,22 +41,36 @@ class BorderApplicator(StyleApplicator):
         return builder
     
     def _apply_border_radius(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        tl = self._parse_pixels(styles.get('border-top-left-radius', DEFAULT_STYLES['border-top-left-radius']))
-        tr = self._parse_pixels(styles.get('border-top-right-radius', DEFAULT_STYLES['border-top-right-radius']))
-        br = self._parse_pixels(styles.get('border-bottom-right-radius', DEFAULT_STYLES['border-bottom-right-radius']))
-        bl = self._parse_pixels(styles.get('border-bottom-left-radius', DEFAULT_STYLES['border-bottom-left-radius']))
+        corners = [
+            self._parse_radius(styles.get(prop, DEFAULT_STYLES[prop]))
+            for prop in (
+                'border-top-left-radius', 'border-top-right-radius',
+                'border-bottom-right-radius', 'border-bottom-left-radius',
+            )
+        ]
+        general = self._parse_radius(styles.get('border-radius', DEFAULT_STYLES['border-radius']))
         
-        general = self._parse_pixels(styles.get('border-radius', DEFAULT_STYLES['border-radius']))
-        if general > 0 and tl == tr == br == bl == 0:
-            tl = tr = br = bl = general
+        if general != 0 and all(c == 0 for c in corners):
+            corners = [general] * 4
         
-        if tl == tr == br == bl:
-            if tl > 0:
-                builder = builder.border_radius(tl)
-        elif tl > 0 or tr > 0 or br > 0 or bl > 0:
-            builder = builder.border_radius(tl, tr, br, bl)
+        if all(c == corners[0] for c in corners):
+            if corners[0] != 0:
+                builder = builder.border_radius(corners[0])
+        else:
+            builder = builder.border_radius(*corners)
         
         return builder
+    
+    def _parse_radius(self, value: str) -> Union[float, str]:
+        """Return pixels as a float, or a percentage string (PicTex resolves those itself)."""
+        value = value.strip()
+        if value.endswith('%'):
+            try:
+                return value if float(value[:-1]) != 0 else 0
+            except ValueError:
+                self.warnings.warn_unexpected_error(f"Failed to parse PERCENT value '{value}'")
+                return 0
+        return self._parse_pixels(value)
     
     def _parse_pixels(self, value: str) -> float:
         if value.endswith('px'):

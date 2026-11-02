@@ -5,7 +5,7 @@ from pictex import Element, SolidColor, LinearGradient
 
 from .base_applicator import StyleApplicator
 from ...warnings import get_warning_collector
-from ...styling import DEFAULT_STYLES
+from ...styling import DEFAULT_STYLES, ColorNormalizer
 
 
 class BackgroundApplicator(StyleApplicator):
@@ -13,6 +13,7 @@ class BackgroundApplicator(StyleApplicator):
 
     def __init__(self):
         self.warnings = get_warning_collector()
+        self._color_normalizer = ColorNormalizer()
     
     def apply(self, builder: Element, styles: Dict[str, Any]) -> Element:
         builder = self._apply_background_color(builder, styles)
@@ -44,6 +45,11 @@ class BackgroundApplicator(StyleApplicator):
             if url:
                 size = styles.get('background-size', DEFAULT_STYLES['background-size'])
                 builder = builder.background_image(url, size)
+        else:
+            self.warnings.warn_style_not_applied(
+                'background-image', bg_image, 'element',
+                "Only url() and linear-gradient() are supported."
+            )
         
         return builder
     
@@ -82,7 +88,7 @@ class BackgroundApplicator(StyleApplicator):
             for i, part in enumerate(color_parts):
                 color_str, position = self._parse_color_stop(part.strip(), i, len(color_parts))
                 try:
-                    color = SolidColor.from_str(color_str)
+                    color = SolidColor.from_str(self._color_normalizer.normalize(color_str))
                     colors.append(color)
                     stops.append(position)
                 except Exception as e:

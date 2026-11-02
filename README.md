@@ -110,8 +110,8 @@ html2pic supports a comprehensive subset of modern CSS. Here's what you can use:
 | `min-width`, `max-width` | `px`, `%` | Size constraints |
 | `min-height`, `max-height` | `px`, `%` | Size constraints |
 | `aspect-ratio` | Number or ratio (e.g., `16/9`) | Maintain proportions |
-| `padding` | `px`, `%`, `em`, `rem` | Shorthand and individual sides |
-| `margin` | `px`, `%`, `em`, `rem` | Shorthand and individual sides |
+| `padding` | `px`, `em`, `rem` | Shorthand and individual sides |
+| `margin` | `px`, `em`, `rem` | Shorthand and individual sides |
 | `border` | Width, style, color | Styles: `solid`, `dashed`, `dotted` |
 | `border-radius` | `px`, `%` | Shorthand or individual corners |
 
@@ -125,7 +125,8 @@ html2pic supports a comprehensive subset of modern CSS. Here's what you can use:
 
 | Property | Values | Notes |
 |----------|--------|-------|
-| `background-color` | Hex, RGB, RGBA, named | Alpha channel supported |
+| `background` | Color and/or image | Shorthand for `background-color` + `background-image` |
+| `background-color` | Hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, named | Alpha channel supported |
 | `background-image` | `url()`, `linear-gradient()` | See gradients section below |
 | `background-size` | `cover`, `contain`, `tile` | For images |
 | `box-shadow` | `offset-x offset-y blur color` | RGBA supported |
@@ -150,9 +151,9 @@ background-image: linear-gradient(90deg, #ff0000 0%, #00ff00 50%, #0000ff 100%);
 | `font-size` | `px`, `em`, `rem` | |
 | `font-weight` | `normal`, `bold`, `100-900` | |
 | `font-style` | `normal`, `italic` | |
-| `color` | Hex, RGB, RGBA, named | |
+| `color` | Hex, `rgb()`, `rgba()`, `hsl()`, `hsla()`, named | Legacy and space-separated syntax |
 | `text-align` | `left`, `right`, `center`, `justify` | |
-| `line-height` | Number, `px`, `%` | |
+| `line-height` | Number, `px`, `%`, `em`, `rem`, `normal` | |
 | `text-decoration` | `underline`, `line-through` | |
 | `text-shadow` | `offset-x offset-y blur color` | |
 
@@ -206,6 +207,12 @@ h1 {
 - **Class:** `.my-class`
 - **ID:** `#my-id`
 - **Universal:** `*`
+- **Compound:** `div.card`, `.btn.primary`, `h1#title`
+- **Descendant:** `.card h1`
+- **Child:** `ul > li`
+
+Specificity follows CSS rules (IDs > classes > tags). Selectors that are not supported yet
+(pseudo-classes, attribute selectors, `+` and `~`) are skipped with a warning.
 
 ---
 
@@ -289,8 +296,9 @@ html2pic supports a subset of CSS, several features are not implemented:
 | Transforms (rotate, scale, skew) | ❌ Not supported | Only `translate()` works |
 | Animations & Transitions | ❌ Not supported | Generate static images |
 | Radial/Conic Gradients | ❌ Not supported | Use `linear-gradient()` |
-| Complex Selectors | ❌ Not supported | Use simple tag, class, or ID selectors |
-| Pseudo-classes (`:hover`, `:nth-child`) | ❌ Not supported | Apply styles directly |
+| Pseudo-classes (`:hover`, `:nth-child`), attribute selectors, `+`/`~` | ❌ Not supported | Use classes |
+| Percentage `padding`, `margin`, `gap` | ❌ Not supported | Use `px`, `em` or `rem` |
+| Inline `style=""` attributes and `<style>` tags | ❌ Not supported | Pass CSS via the `css` argument |
 | Media Queries | ❌ Not supported | Set explicit dimensions |
 | Overflow & Scrolling | ❌ Not supported | Content must fit container |
 
@@ -305,6 +313,21 @@ Contributions are welcome! Please feel free to:
 - Submit pull requests
 
 For major changes, please open an issue first to discuss your ideas.
+
+### Running the tests
+
+```bash
+pip install -e ".[dev]"
+pytest
+```
+
+Use `pytest --cov=html2pic` for a coverage report. On minimal Linux images, `skia-python`
+needs the EGL/GL system libraries (`apt-get install libegl1 libgl1`).
+
+Besides unit and integration tests, `tests/visual/` compares html2pic's output pixel by
+pixel against reference screenshots taken with Chromium. Adding a rendering test is as easy
+as dropping an HTML file in `tests/visual/cases/` and running
+`python tools/generate_visual_references.py`; see [tests/visual/README.md](tests/visual/README.md).
 
 ---
 
@@ -331,4 +354,4 @@ See [CHANGELOG.md](CHANGELOG.md) for version history and migration guides.
 
 ## Development Status
 
-**Note:** This software is currently in early alpha stage. It lacks test coverage and may contain bugs or unexpected behavior. Use with caution in production environments and please report any issues you encounter.
+**Note:** This software is currently in early alpha stage and may contain bugs or unexpected behavior. Use with caution in production environments and please report any issues you encounter.

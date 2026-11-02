@@ -2,6 +2,32 @@
 
 All notable changes to html2pic will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- Descendant (`.card h1`), child (`ul > li`) and compound (`div.card#main`) selectors, with
+  real CSS specificity. Still-unsupported selectors are skipped with a warning.
+- `background` shorthand (color and/or `url()`/`linear-gradient()` image).
+- `hsl()`/`hsla()` colors and modern `rgb()` syntax (`rgb(255 0 0 / 50%)`, percentage channels).
+- `text-decoration: underline | line-through`.
+- Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.10–3.13.
+
+### Fixed
+- `rem` units were never converted.
+- `font-size` in `em`/`%` was relative to 16px instead of the parent's font size.
+- Percentage `border-radius` (e.g. `50%` for circles) and other percentage values were
+  computed against the parent's value of the same property and usually became `0`.
+- `line-height` in `px` was used as a font-size multiplier (`24px` → 24× the font size).
+- User rules such as `div { ... }` or `* { ... }` were also applied to the internal root
+  wrapper, adding extra padding/margins/backgrounds around the output.
+- `rgb()`/`rgba()` color stops in `linear-gradient()` were dropped.
+- Debug output was printed to stdout for every element with a `transform`.
+
+### Changed
+- `requires-python` raised to `>=3.10`. Python 3.9 reached end of life in October 2025, PicTex 2.x
+  needs at least 3.9 and current tinycss2 releases need 3.10.
+- Percentage `padding`, `margin` and `gap` now emit a warning instead of being dropped silently.
+
 ## [0.2.2] - 2026-01-28
 
 ### Fixed

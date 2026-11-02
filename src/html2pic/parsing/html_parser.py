@@ -2,6 +2,7 @@
 from typing import Optional
 
 from bs4 import BeautifulSoup, NavigableString, Tag
+from bs4.element import PreformattedString
 
 from ..dom import DOMNode, NodeType
 from ..warnings import get_warning_collector
@@ -35,6 +36,11 @@ class HtmlParser:
         return root
     
     def _process_node(self, node, parent: DOMNode) -> Optional[DOMNode]:
+        # Comments, doctypes, CDATA sections, declarations and processing instructions are
+        # NavigableString subclasses too, but they are not rendered content.
+        if isinstance(node, PreformattedString):
+            return None
+        
         if isinstance(node, NavigableString):
             text = str(node).strip()
             if text:

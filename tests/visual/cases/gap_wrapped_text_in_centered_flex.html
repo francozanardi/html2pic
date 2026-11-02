@@ -1,0 +1,6 @@
+<!-- html2pic-test: {"shift_tolerance": 1, "xfail": "a wrapped text block shrinks to its longest line and gets centered; browsers give it the full available width (fit-content)"} -->
+<style>
+.card { display: flex; flex-direction: column; align-items: center; width: 160px; padding: 10px; background-color: #ecf0f1; }
+p { font-size: 14px; }
+</style>
+<div class="card"><p>This sentence is long enough to wrap onto two lines</p></div>

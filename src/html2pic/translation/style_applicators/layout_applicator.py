@@ -45,12 +45,25 @@ class LayoutApplicator(StyleApplicator):
                     builder = builder.gap(gap_value)
             except ValueError as e:
                 self.warnings.warn_unexpected_error(f"Failed to parse PIXEL value '{gap}': {e}")
+        elif gap.endswith('%'):
+            self.warnings.warn_style_not_applied(
+                'gap', gap, 'element', "Percentage values are not supported; use px, em or rem."
+            )
         return builder
     
     def _apply_justify(self, builder: Union[Row, Column], styles: Dict[str, Any]) -> Union[Row, Column]:
         justify = styles.get('justify-content', DEFAULT_STYLES['justify-content'])
+        if self._is_reversed(styles):
+            # Children are laid out in reverse order, so the main-start edge is on the other
+            # side. flex-start/flex-end follow the flex direction and must be mirrored, while
+            # start/end follow the writing mode and keep their meaning.
+            justify = {'flex-start': 'flex-end', 'flex-end': 'flex-start'}.get(justify, justify)
         pictex_value = self.JUSTIFY_MAPPING.get(justify, 'start')
         return builder.justify_content(pictex_value)
+    
+    @staticmethod
+    def _is_reversed(styles: Dict[str, Any]) -> bool:
+        return styles.get('display') == 'flex' and styles.get('flex-direction', '').endswith('-reverse')
     
     def _apply_align(self, builder: Union[Row, Column], styles: Dict[str, Any]) -> Union[Row, Column]:
         align = styles.get('align-items', DEFAULT_STYLES['align-items'])

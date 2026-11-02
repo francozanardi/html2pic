@@ -25,6 +25,7 @@ class TypographyApplicator(StyleApplicator):
         builder = self._apply_line_height(builder, styles)
         builder = self._apply_text_wrap(builder, styles)
         builder = self._apply_text_shadow(builder, styles)
+        builder = self._apply_text_decoration(builder, styles)
         return builder
     
     def _apply_font_family(self, builder: Element, styles: Dict[str, Any]) -> Element:
@@ -91,15 +92,48 @@ class TypographyApplicator(StyleApplicator):
         return builder
     
     def _apply_line_height(self, builder: Element, styles: Dict[str, Any]) -> Element:
-        line_height = styles.get('line-height', DEFAULT_STYLES['line-height'])
+        line_height = styles.get('line-height', DEFAULT_STYLES['line-height']).strip().lower()
         try:
-            if line_height.endswith('px'):
+            if line_height == 'normal':
+                builder = builder.line_height('auto')
+            elif line_height.endswith('%'):
+                builder = builder.line_height(float(line_height[:-1]) / 100)
+            elif line_height.endswith('rem'):
+                builder = builder.line_height(float(line_height[:-3]) * 16 / self._font_size_px(styles))
+            elif line_height.endswith('em'):
                 builder = builder.line_height(float(line_height[:-2]))
+            elif line_height.endswith('px'):
+                # PicTex takes a multiplier of the font size, not an absolute height.
+                builder = builder.line_height(float(line_height[:-2]) / self._font_size_px(styles))
             else:
                 builder = builder.line_height(float(line_height))
-        except ValueError as e:
+        except (ValueError, ZeroDivisionError) as e:
             self.warnings.warn_unexpected_error(f"Unable to apply line height {line_height}: {str(e)}")
         return builder
+    
+    def _apply_text_decoration(self, builder: Element, styles: Dict[str, Any]) -> Element:
+        decoration = styles.get('text-decoration', DEFAULT_STYLES['text-decoration']).lower().split()
+        if 'none' in decoration or not decoration:
+            return builder
+        # Approximates browsers, which scale the decoration thickness with the font size.
+        thickness = max(1.0, round(self._font_size_px(styles) / 14, 1))
+        if 'underline' in decoration:
+            builder = builder.underline(thickness)
+        if 'line-through' in decoration:
+            builder = builder.strikethrough(thickness)
+        for unsupported in ('overline', 'blink'):
+            if unsupported in decoration:
+                self.warnings.warn_style_not_applied(
+                    'text-decoration', unsupported, 'element', f"'{unsupported}' is not supported."
+                )
+        return builder
+    
+    def _font_size_px(self, styles: Dict[str, Any]) -> float:
+        font_size = styles.get('font-size', DEFAULT_STYLES['font-size'])
+        try:
+            return float(font_size[:-2]) if font_size.endswith('px') else 16.0
+        except ValueError:
+            return 16.0
     
     def _apply_text_wrap(self, builder: Element, styles: Dict[str, Any]) -> Element:
         text_wrap = styles.get('text-wrap', DEFAULT_STYLES['text-wrap'])

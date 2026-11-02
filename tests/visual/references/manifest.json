@@ -1,0 +1,179 @@
+{
+  "cases": {
+    "bg_color_syntaxes": {
+      "source_sha256": "9c25f792ce27a7a41a9ba00e0915e148969905913e74547120cf9201dafb0919"
+    },
+    "bg_gradient_angle": {
+      "source_sha256": "4f862541a1313508c891bbd842428bc33bb12f65ff86ae00f41c55ead23e8a64"
+    },
+    "bg_gradient_stops": {
+      "source_sha256": "2a8d21fddc0a720bbb699f77c0a7eaca3d0fba80303252d61c9af6eaef09763e"
+    },
+    "bg_gradient_to_right": {
+      "source_sha256": "44d138ac33f94bdd84f17511a43abc0e21f73eb9ce51c9393002c94c98cf4e37"
+    },
+    "bg_image_contain": {
+      "source_sha256": "9bcc83cc423dc0d8516478854066512b37b0c5594c10fed2e0bea7bb37741634"
+    },
+    "bg_image_cover": {
+      "source_sha256": "1fa999b6f3865e8c34916e53ad3251d9f8480beaeabde5c00b49b2ded632984c"
+    },
+    "bg_shorthand": {
+      "source_sha256": "a7a3c660049a8a1c37678a31d58a6e83b89e0bb5253f822847572e70611215ac"
+    },
+    "box_aspect_ratio": {
+      "source_sha256": "f43fe37c7e807219483e1a8fee8f20c605f2c82340828f3f327d426e8087c965"
+    },
+    "box_border_dashed": {
+      "source_sha256": "254d7416baf91210c6101bf4d7d026a2cf696aa8bed5cc13e7735b7d8f0a3eb4"
+    },
+    "box_border_radius": {
+      "source_sha256": "0885fde8156e9b04da9ba117593d33d430a463ad3eb05404517856a51c9d995a"
+    },
+    "box_border_radius_circle": {
+      "source_sha256": "108be87e0b4d854e38ee4c24ceeb2dcbebe78ee0fdd90ba5290b83392bc59dbb"
+    },
+    "box_border_radius_corners": {
+      "source_sha256": "24e34aa4f38a958e7ef1fe8041792bc9c6ad7d0d1c3d8bcf0b1e6ad2a6e43f2d"
+    },
+    "box_border_solid": {
+      "source_sha256": "8f5c34a3b31cbbb22af552c95b83069ec95b941ccec73c077e8dc4b13871524f"
+    },
+    "box_display_none": {
+      "source_sha256": "ad2714df6eeaaafbb78d9b1daa5681b973699161420ae7b6bef5f3ebd6887c7d"
+    },
+    "box_margins_block_collapse": {
+      "source_sha256": "7300c9241f9fec1f0297e7a0b346155dddc97a12d96b2245542540026712396d"
+    },
+    "box_margins_in_flex": {
+      "source_sha256": "95298b20fae174f19afd7ed7f506011f84cd4d11bb99a317173c12cd7fdc7d2d"
+    },
+    "box_min_max": {
+      "source_sha256": "7d365b554910e4e7694dcffda0a685d02874a4a9c07a03868c58295aa126b87a"
+    },
+    "box_padding_nested": {
+      "source_sha256": "ef0fecdf5a317587166ca2b0e49bc738479b11494eb6466a5efa4f1580e4fb55"
+    },
+    "box_rgba_alpha": {
+      "source_sha256": "1782108b118c80a8a702e2fc4fc0be5f26a5b5c83886361c9d57ff2c17295b44"
+    },
+    "box_sizing_content_box": {
+      "source_sha256": "19a091a9bb52feb5d1cff80949a221201d07057e0f4203d1d9503cbb8ce4a846"
+    },
+    "box_solid": {
+      "source_sha256": "d1af58f135ae53a4fed4904ac88cc0364308af895bcdecfd3dbe54bc3b18611c"
+    },
+    "flex_align_items": {
+      "source_sha256": "5a8733649cffafb65a814973502fb16df198092e9ed36452c2d1982b1d98e0cc"
+    },
+    "flex_align_self": {
+      "source_sha256": "d9a841f1f9704fad572161516a68d51690eb20179bf87bace65cba048c99c401"
+    },
+    "flex_column_gap": {
+      "source_sha256": "94a0a5d384b8598abd08b657a8f352cf988e5eabfccfc920e3f18abd2c032894"
+    },
+    "flex_grow": {
+      "source_sha256": "3ae55a51c0d7ab6b65db0ec486233e53cb2562be6c0cc979172edf0cf6f49cd3"
+    },
+    "flex_justify_content": {
+      "source_sha256": "11ad257669243ef5fc27ed834d7b64dfc9ffe69f7bceeb099e812225837b1278"
+    },
+    "flex_row_gap": {
+      "source_sha256": "ce5ded803003eb8f87a9f028489afdb6a92ee6557c850fb6fbbcacabf4a0d37d"
+    },
+    "flex_row_reverse": {
+      "source_sha256": "f43b90d28f725a0bb4b967981234b818300b8d7b07140217c959146fd7818366"
+    },
+    "flex_wrap": {
+      "source_sha256": "31b1636401c7ade3c8bed4abeaa1ed590474d79b551ce51c541758b8f76112c0"
+    },
+    "gap_background_position_default": {
+      "source_sha256": "b70a6aefcd961508f2126e5c25c45b498938696b496a0c5c2c7c24b50ae588b2"
+    },
+    "gap_font_optical_sizing": {
+      "source_sha256": "9a8d2d6347a5922152708d63b7852294ac9625241a693b73391b8e2f340ece27"
+    },
+    "gap_fractional_line_boxes": {
+      "source_sha256": "66479f7c78ac67380d140ab161b69a8012d9dc049cfec84ee9a0bf44253242e3"
+    },
+    "gap_grid": {
+      "source_sha256": "7293bf3d3d75ece6e720d55e853a81a079c8ab01b7c6864cb0f0c7dc6d09b717"
+    },
+    "gap_inline_style_attribute": {
+      "source_sha256": "2c99a939b4915474f6a6affde25c821861b852a7975d2e6ce99e85a525793a1e"
+    },
+    "gap_overflow_hidden": {
+      "source_sha256": "19ba26f66db841bbc12bf451cb4fe5c608f2299c42de438106862e401c550397"
+    },
+    "gap_pseudo_element": {
+      "source_sha256": "56040816a39c5f33e03bbf5087aa3cdc35f60a01d81013720ee88202bb1cb9d8"
+    },
+    "gap_radial_gradient": {
+      "source_sha256": "64721e86cbedafc5dc038c3974bd520c95bfd44869618303946c670f0324aa32"
+    },
+    "gap_transform_rotate": {
+      "source_sha256": "03dd898f413e6b36a34e8e446b862df0bd2eb8bc019c8cce66c784cc1dec17e6"
+    },
+    "gap_wrapped_text_in_centered_flex": {
+      "source_sha256": "b468f8ea96b19ec9e3670f15f7daf448ecccd7592c2f54ee4c09d1f70711d1a4"
+    },
+    "html_full_document": {
+      "source_sha256": "ffdb18aca5677e2a7bba9e42260aa13d3c1f2b7c8c78f4de7e80dbd5dfa68bdc"
+    },
+    "img_tag": {
+      "source_sha256": "f925d561c20bfa5851fd15543dd9b69030eff392e5fa683ef184e5af272fba27"
+    },
+    "position_absolute": {
+      "source_sha256": "f0752e1e41849d6363177f8c970c60b40801a8d6856df133ed77aaf1c5b26162"
+    },
+    "position_centered_translate": {
+      "source_sha256": "1590cf1f5a892a164bc4ac010566d44cbf1c8d5b498f4b72f745bec5c336512d"
+    },
+    "position_relative": {
+      "source_sha256": "26fbe42b3a8845472bfa35580e3ec57dc4e20b45ca7c0dd36be0c9aabcf5caa8"
+    },
+    "selectors_descendant_and_child": {
+      "source_sha256": "1ab3488505f53b3934b09037654a9d91dd68e2a3147a3e0e842bace10ed0884c"
+    },
+    "selectors_specificity": {
+      "source_sha256": "35737cf64a5e58139ac61ff87af9a95b49edef69a21e8c65a67682f0382f11db"
+    },
+    "shadow_box": {
+      "source_sha256": "ff9bf25f28cce1f5fd8ca0a8d95799ecdebd468987dc9477fbb3d716dcea9ba9"
+    },
+    "shadow_box_blur": {
+      "source_sha256": "6b58c4662de3ad0f12e7e18102b1fbb9cf061f581749b1eb1a8116faaa4ecf47"
+    },
+    "text_align_center": {
+      "source_sha256": "2e7dbda84f800fe7280532ef9aacddf59c7c9a7ccee4769f0308ecd262aacf11"
+    },
+    "text_basic": {
+      "source_sha256": "9c86cbc342afece04d5da157613353e75fbbecc961756f1ecf72f9bd2bbb299e"
+    },
+    "text_in_flex_card": {
+      "source_sha256": "5054a13d986468ff3d47d4f2b3b3971f5565e259759895d4f0817237b1f0bde7"
+    },
+    "text_inherited_color_and_units": {
+      "source_sha256": "919d74321bbcfc1d577f47bd78b228802fcd82cd5f3819628dcf91e2417cc08e"
+    },
+    "text_italic": {
+      "source_sha256": "4c3ef95b4a11796a8b65aa6148bac0665b3d0629249a17c92d71f8db01f6a4b2"
+    },
+    "text_line_height_and_wrap": {
+      "source_sha256": "d956498d65708f5de5b900d5a85149eb364b30ce7c7ec22531ca31d8f1a4ccb0"
+    },
+    "text_shadow": {
+      "source_sha256": "4444df56254aad615bbefda78f002d9497d9b84d2b930a564547cc51afa52f1f"
+    },
+    "text_underline_strike": {
+      "source_sha256": "afda2c53339763a11864d50d304cc22aad2268cecd7b34e0da9ab6bf592630a0"
+    },
+    "text_weights_and_sizes": {
+      "source_sha256": "9e13022e432805c66bce5fca14660d7d23eb4126464a66a1312f9ad37622ec1b"
+    }
+  },
+  "browser": "chromium 153.0.8010.12",
+  "template_version": 2,
+  "inter_font_sha256": "4989b125924991b90d05b2d16e0e388c48f7d5bb8b30539bbf9c755278d0ccaf",
+  "generated_at": "2026-11-02T15:22:51Z"
+}

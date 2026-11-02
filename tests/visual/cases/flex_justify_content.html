@@ -1,0 +1,16 @@
+<style>
+.list { display: flex; flex-direction: column; gap: 4px; }
+.row { display: flex; width: 120px; height: 12px; background-color: #ecf0f1; }
+.i { width: 20px; height: 12px; background-color: #2c3e50; }
+.start { justify-content: flex-start; } .center { justify-content: center; }
+.end { justify-content: flex-end; } .between { justify-content: space-between; }
+.around { justify-content: space-around; } .evenly { justify-content: space-evenly; }
+</style>
+<div class="list">
+  <div class="row start"><div class="i"></div><div class="i"></div></div>
+  <div class="row center"><div class="i"></div><div class="i"></div></div>
+  <div class="row end"><div class="i"></div><div class="i"></div></div>
+  <div class="row between"><div class="i"></div><div class="i"></div><div class="i"></div></div>
+  <div class="row around"><div class="i"></div><div class="i"></div><div class="i"></div></div>
+  <div class="row evenly"><div class="i"></div><div class="i"></div><div class="i"></div></div>
+</div>
