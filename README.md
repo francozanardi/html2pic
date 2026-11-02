@@ -181,7 +181,7 @@ h1 {
 **Features:**
 - Multiple weights and styles per family
 - Fallback chains (prioritizes @font-face, then system fonts)
-- Relative, absolute paths, and URLs
+- Relative paths (resolved against `base_url`, or the stylesheet that declares them), absolute paths, `data:` URIs and, with a `fetcher`, remote URLs
 
 ### Positioning & Transforms
 
@@ -256,9 +256,16 @@ Background image support with different sizing modes:
 
 ## API Reference
 
-### `Html2Pic(html: str, css: str = "")`
+### `Html2Pic(html, css="", *, base_url=None, fetcher=None)`
 
 Main renderer class.
+
+| Argument | Description |
+|----------|-------------|
+| `html` | HTML to render. `<style>` elements and `style=""` attributes are applied. |
+| `css` | Extra CSS, applied after the document's own stylesheets (it wins ties). |
+| `base_url` | Directory, file or URL that relative URLs (images, fonts, stylesheets) resolve against. Defaults to the current directory. A `<base href>` in the document is resolved against it. |
+| `fetcher` | Callable `(url) -> bytes` that loads `<link rel="stylesheet">`, `@import` and remote images/fonts. See below. |
 
 **Methods:**
 
@@ -286,6 +293,45 @@ image.show()
 
 ---
 
+### Stylesheets and external resources
+
+CSS can come from three places, applied in this order (later wins ties; specificity and
+`style=""` attributes still take precedence as in browsers):
+
+1. `<style>` elements and `<link rel="stylesheet">` in the document, in document order
+2. the `css` argument
+3. `style=""` attributes
+
+Relative URLs resolve against `base_url`, or, inside a stylesheet, against that stylesheet's
+own URL. Local images and fonts are read directly, and `data:` URIs work everywhere.
+
+**Linked stylesheets, `@import` and remote (`http(s)://`) images and fonts are only loaded
+through a `fetcher`.** Without one they are skipped with a warning. This is deliberate:
+html2pic is often used to render HTML coming from users, and it should never reach the
+network or read files the caller did not allow.
+
+```python
+from html2pic import Html2Pic
+from html2pic.fetchers import local_fetcher, http_fetcher, chain_fetchers
+
+html = """
+<link rel="stylesheet" href="css/card.css">
+<link rel="stylesheet" href="https://fonts.example.com/brand.css">
+<div class="card">Hello</div>
+"""
+
+fetcher = chain_fetchers(
+    local_fetcher("./templates"),               # only files inside ./templates
+    http_fetcher(timeout=5, max_bytes=5_000_000),
+)
+Html2Pic(html, base_url="./templates/", fetcher=fetcher).render().save("card.png")
+```
+
+Any callable `(url: str) -> bytes` works as a fetcher, so you can add caching, an allowlist
+of hosts, authentication, etc.
+
+---
+
 ## Limitations
 
 html2pic supports a subset of CSS, several features are not implemented:
@@ -298,7 +344,7 @@ html2pic supports a subset of CSS, several features are not implemented:
 | Radial/Conic Gradients | ❌ Not supported | Use `linear-gradient()` |
 | Pseudo-classes (`:hover`, `:nth-child`), attribute selectors, `+`/`~` | ❌ Not supported | Use classes |
 | Percentage `padding`, `margin`, `gap` | ❌ Not supported | Use `px`, `em` or `rem` |
-| Inline `style=""` attributes and `<style>` tags | ❌ Not supported | Pass CSS via the `css` argument |
+| `@media` rules and media-conditional stylesheets | ❌ Skipped with a warning | — |
 | Media Queries | ❌ Not supported | Set explicit dimensions |
 | Overflow & Scrolling | ❌ Not supported | Content must fit container |
 

@@ -37,7 +37,8 @@ def test_matches_browser_reference(case, monkeypatch):
 
     # Relative url()s in cases are resolved against the cases directory, like the browser's <base>.
     monkeypatch.chdir(CASES_DIR)
-    actual = Html2Pic(case.html, case.css).render().to_numpy("RGBA")
+    html, css = case.html2pic_input()
+    actual = Html2Pic(html, css).render().to_numpy("RGBA")
 
     passed, result = compare_images(expected, actual, case.options)
     if not passed:

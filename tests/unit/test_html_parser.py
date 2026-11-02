@@ -46,11 +46,15 @@ class TestHtmlParser:
     def test_tags_are_lowercased(self):
         assert parse("<DIV></DIV>").children[0].tag == "div"
 
-    def test_skipped_tags_emit_warning(self, warnings_collector):
-        root = parse("<script>alert(1)</script><title>t</title><p>x</p>")
+    def test_scripts_are_skipped_with_warning(self, warnings_collector):
+        root = parse("<script>alert(1)</script><p>x</p>")
         assert [c.tag for c in root.children] == ["p"]
-        tags = {w["details"]["tag"] for w in warnings_collector.get_warnings()}
-        assert {"script", "title"} <= tags
+        assert {w["details"]["tag"] for w in warnings_collector.get_warnings()} == {"script"}
+
+    def test_metadata_is_skipped_silently(self, warnings_collector):
+        root = parse("<head><title>t</title><meta charset='utf-8'></head><p>x</p>")
+        assert [c.tag for c in root.children] == ["p"]
+        assert warnings_collector.get_warnings() == []
 
     def test_get_all_text_joins_descendants(self):
         root = parse("<div><p>Hello</p><p><b>big</b> world</p></div>")

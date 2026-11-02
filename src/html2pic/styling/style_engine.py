@@ -1,5 +1,5 @@
 """Style computation engine."""
-from typing import List, Dict, Any
+from typing import Any, Callable, Dict, List, Optional
 
 from ..dom import DOMNode
 from ..parsing import CSSRule
@@ -26,15 +26,22 @@ class StyleEngine:
         self.unit_converter = UnitConverter(base_font_size)
         self.color_normalizer = ColorNormalizer()
         self.cascade_resolver = CascadeResolver()
+        self.inline_style_parser: Optional[Callable[[str], Dict[str, str]]] = None
     
     def apply_styles(
         self, 
         dom_tree: DOMNode, 
         css_rules: List[CSSRule], 
-        font_registry: FontRegistry = None
+        font_registry: FontRegistry = None,
+        inline_style_parser: Optional[Callable[[str], Dict[str, str]]] = None,
     ) -> DOMNode:
-        """Apply CSS rules to a DOM tree, computing final styles for each node."""
+        """Apply CSS rules to a DOM tree, computing final styles for each node.
+        
+        ``inline_style_parser`` turns a ``style=""`` attribute into declarations; those are
+        applied after every matching rule, like in browsers. Without it the attribute is ignored.
+        """
         self.font_registry = font_registry
+        self.inline_style_parser = inline_style_parser
         # The top node is the synthetic wrapper created by the HTML parser, not part of
         # the user's document, so CSS rules (e.g. `div { padding: 10px }`) must not match it.
         self._apply_recursive(dom_tree, css_rules, {}, match_rules=False)
@@ -60,6 +67,10 @@ class StyleEngine:
             for rule in matching_rules:
                 for prop, value in rule.declarations.items():
                     computed[prop] = value
+            
+            inline = node.attributes.get('style') if node.is_element() else None
+            if inline and self.inline_style_parser is not None:
+                computed.update(self.inline_style_parser(inline))
         
         computed = self._normalize(computed, parent_styles)
         node.computed_styles = computed

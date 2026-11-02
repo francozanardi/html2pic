@@ -67,6 +67,9 @@ class WarningCollector:
             Html2PicWarning
         )
     
+    def warn_resource(self, message: str):
+        self.warn(message, WarningCategory.RESOURCE, {'message': message}, Html2PicWarning)
+    
     def warn_unsupported_html_tag(self, tag_name: str, context: str = ""):
         self.warn(
             f"HTML tag '<{tag_name}>' is not supported and was skipped",

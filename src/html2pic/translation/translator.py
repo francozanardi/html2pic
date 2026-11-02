@@ -7,6 +7,7 @@ from ..dom import DOMNode
 from ..fonts import FontRegistry
 from ..warnings import get_warning_collector
 from ..exceptions import RenderError
+from ..resources import ResourceLoader
 from .element_factory import ElementFactory
 from .style_applicators import (
     StyleApplicator,
@@ -29,16 +30,24 @@ class PicTexTranslator:
         self.warnings = get_warning_collector()
         self.element_factory = ElementFactory()
         self.font_registry: FontRegistry = None
+        self.loader: Optional[ResourceLoader] = None
         self._applicators: List[StyleApplicator] = []
         self._layout_applicator: LayoutApplicator = None
     
     def translate(
         self, 
         styled_dom: DOMNode, 
-        font_registry: FontRegistry = None
+        font_registry: FontRegistry = None,
+        loader: Optional[ResourceLoader] = None,
     ) -> Tuple[Canvas, Optional[Element]]:
-        """Translate a styled DOM tree to PicTex builders."""
+        """Translate a styled DOM tree to PicTex builders.
+        
+        ``loader`` turns image/font URLs into local files PicTex can read; without it URLs
+        are passed to PicTex unchanged.
+        """
         self.font_registry = font_registry
+        self.loader = loader
+        self.element_factory.loader = loader
         self._applicators = self._create_applicators()
         self._layout_applicator = LayoutApplicator()
         
@@ -53,10 +62,10 @@ class PicTexTranslator:
         return [
             SizeApplicator(),
             SpacingApplicator(),
-            BackgroundApplicator(),
+            BackgroundApplicator(self.loader),
             BorderApplicator(),
             ShadowApplicator(),
-            TypographyApplicator(self.font_registry),
+            TypographyApplicator(self.font_registry, self.loader),
             PositioningApplicator(),
             TransformApplicator(),
         ]
@@ -131,6 +140,6 @@ class PicTexTranslator:
     def _style_text(self, text: Text, node: DOMNode) -> Text:
         parent = node.parent
         if parent and parent.computed_styles:
-            applicator = TypographyApplicator(self.font_registry)
+            applicator = TypographyApplicator(self.font_registry, self.loader)
             text = applicator.apply(text, parent.computed_styles)
         return text

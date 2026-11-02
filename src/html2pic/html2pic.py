@@ -1,5 +1,5 @@
 """Main Html2Pic class for converting HTML + CSS to images."""
-from typing import Dict, Any
+from typing import Any, Dict, List, Optional
 
 import pictex
 
@@ -11,7 +11,8 @@ from .exceptions import RenderError
 from .dom import DOMNode
 from .parsing import CSSRule
 from .fonts import FontRegistry
-from typing import Optional, List
+from .resources import Fetcher, ResourceLoader, Stylesheet
+
 
 class Html2Pic:
     """Convert HTML + CSS to images using PicTex.
@@ -25,21 +26,42 @@ class Html2Pic:
         image = renderer.render()
         image.save("output.png")
         ```
+    
+    Args:
+        html: The HTML to render. ``<style>`` elements and ``style=""`` attributes are applied.
+        css: Extra CSS, applied after the document's own stylesheets (it wins ties).
+        base_url: Directory, file path or URL that relative URLs (images, fonts,
+            stylesheets) resolve against. Defaults to the current working directory.
+            A ``<base href>`` in the document is resolved against it.
+        fetcher: Callable ``(url) -> bytes`` used to load ``<link rel="stylesheet">``,
+            ``@import`` and remote (``http(s)://``) images and fonts. Without a fetcher
+            those are skipped with a warning, so rendering untrusted HTML never reaches the
+            network or reads stylesheets from disk unless you opt in. See
+            :mod:`html2pic.fetchers` for ready-made fetchers.
     """
     
-    def __init__(self, html: str, css: str = ""):
+    def __init__(
+        self,
+        html: str,
+        css: str = "",
+        *,
+        base_url: Optional[str] = None,
+        fetcher: Optional[Fetcher] = None,
+    ):
         self.html = html
         self.css = css
         
-        self._html_parser: HtmlParser = HtmlParser()
-        self._css_parser: CssParser = CssParser()
-        self._style_engine: StyleEngine = StyleEngine()
-        self._translator: PicTexTranslator = PicTexTranslator()
         self._warnings = get_warning_collector()
-        
         reset_warnings()
         
+        self._loader = ResourceLoader(base_url=base_url, fetcher=fetcher)
+        self._html_parser: HtmlParser = HtmlParser()
+        self._css_parser: CssParser = CssParser(loader=self._loader)
+        self._style_engine: StyleEngine = StyleEngine()
+        self._translator: PicTexTranslator = PicTexTranslator()
+        
         self._dom_tree: Optional[DOMNode] = None
+        self._stylesheets: Optional[List[Stylesheet]] = None
         self._style_rules: Optional[List[CSSRule]] = None
         self._font_registry: Optional[FontRegistry] = None
         self._styled_tree: Optional[DOMNode] = None
@@ -48,12 +70,33 @@ class Html2Pic:
     def dom_tree(self) -> DOMNode:
         if self._dom_tree is None:
             self._dom_tree = self._html_parser.parse(self.html)
+            if self._html_parser.base_href:
+                self._loader.set_document_base(self._html_parser.base_href)
         return self._dom_tree
+    
+    @property
+    def stylesheets(self) -> List[Stylesheet]:
+        """Stylesheets in cascade order: the document's ``<style>``/``<link>``, then ``css``."""
+        if self._stylesheets is None:
+            _ = self.dom_tree
+            base = self._loader.base_url
+            sheets = []
+            for source in self._html_parser.stylesheets:
+                if source.kind == 'style':
+                    sheets.append(Stylesheet(source.value, base, origin='style'))
+                else:
+                    url = self._loader.resolve(source.value)
+                    css = self._loader.fetch_text(url, purpose='stylesheet')
+                    if css is not None:
+                        sheets.append(Stylesheet(css, url, origin='link'))
+            sheets.append(Stylesheet(self.css, base, origin='css'))
+            self._stylesheets = sheets
+        return self._stylesheets
     
     @property
     def style_rules(self) -> List[CSSRule]:
         if self._style_rules is None:
-            self._style_rules, self._font_registry = self._css_parser.parse(self.css)
+            self._style_rules, self._font_registry = self._css_parser.parse_stylesheets(self.stylesheets)
         return self._style_rules
 
     @property
@@ -68,14 +111,15 @@ class Html2Pic:
             self._styled_tree = self._style_engine.apply_styles(
                 self.dom_tree,
                 self.style_rules,
-                self.font_registry
+                self.font_registry,
+                inline_style_parser=lambda style: self._css_parser.parse_inline(style, self._loader.base_url),
             )
         return self._styled_tree
     
     def render(self, crop_mode: pictex.CropMode = pictex.CropMode.CONTENT_BOX) -> pictex.BitmapImage:
         """Render to a bitmap image."""
         try:
-            canvas, root = self._translator.translate(self.styled_tree, self.font_registry)
+            canvas, root = self._translator.translate(self.styled_tree, self.font_registry, self._loader)
             if root is None:
                 result = canvas.render("", crop_mode=crop_mode)
                 self._print_warnings()
@@ -91,7 +135,7 @@ class Html2Pic:
     def render_as_svg(self, embed_font: bool = True) -> pictex.VectorImage:
         """Render to an SVG vector image."""
         try:
-            canvas, root = self._translator.translate(self.styled_tree, self.font_registry)
+            canvas, root = self._translator.translate(self.styled_tree, self.font_registry, self._loader)
             if root is None:
                 result = canvas.render_as_svg("", embed_font=embed_font)
                 self._print_warnings()

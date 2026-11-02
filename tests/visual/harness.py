@@ -48,6 +48,9 @@ DEFAULT_OPTIONS: Dict[str, Any] = {
     "shift_tolerance": 0,
     # Allowed difference (in px) between the rendered and reference image sizes.
     "size_tolerance": 0,
+    # Pass the case's <style> blocks to html2pic inside the HTML (exercising its own <style>
+    # handling) instead of through the `css` argument.
+    "styles_in_html": False,
     # When set, the case documents a known divergence from the browser and is expected to fail.
     "xfail": None,
 }
@@ -108,6 +111,13 @@ class VisualCase:
     html: str
     css: str
     options: Dict[str, Any] = field(default_factory=dict)
+    source: str = ""
+
+    def html2pic_input(self) -> Tuple[str, str]:
+        """(html, css) to give html2pic for this case."""
+        if self.options["styles_in_html"]:
+            return self.source, ""
+        return self.html, self.css
 
     @property
     def reference_path(self) -> Path:
@@ -144,7 +154,7 @@ def load_case(path: Path) -> VisualCase:
 
     css = "\n".join(m.group(1) for m in _STYLE_RE.finditer(source))
     html = _STYLE_RE.sub("", source).strip()
-    return VisualCase(name=path.stem, path=path, html=html, css=css, options=options)
+    return VisualCase(name=path.stem, path=path, html=html, css=css, options=options, source=source.strip())
 
 
 def load_cases():
