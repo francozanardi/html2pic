@@ -11,8 +11,9 @@ from ..warnings import get_warning_collector
 class ElementFactory:
     """Factory for creating PicTex builders from DOM nodes."""
     
-    def __init__(self):
+    def __init__(self, loader=None):
         self.warnings = get_warning_collector()
+        self.loader = loader
     
     INLINE_TAGS = {'span', 'a', 'strong', 'em', 'b', 'i', 'u', 'code', 'small'}
     BLOCK_TAGS = {'div', 'section', 'article', 'main', 'header', 'footer', 'aside', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6'}
@@ -36,6 +37,10 @@ class ElementFactory:
         if not src:
             self.warnings.warn_message("Image source is empty")
             return None
+        if self.loader is not None:
+            src = self.loader.localize(src, purpose='image')
+            if src is None:
+                return None
         return Image(src)
     
     def _create_flex_container(self, node: DOMNode) -> Element:

@@ -99,9 +99,6 @@
     "gap_grid": {
       "source_sha256": "7293bf3d3d75ece6e720d55e853a81a079c8ab01b7c6864cb0f0c7dc6d09b717"
     },
-    "gap_inline_style_attribute": {
-      "source_sha256": "2c99a939b4915474f6a6affde25c821861b852a7975d2e6ce99e85a525793a1e"
-    },
     "gap_overflow_hidden": {
       "source_sha256": "19ba26f66db841bbc12bf451cb4fe5c608f2299c42de438106862e401c550397"
     },
@@ -144,6 +141,12 @@
     "shadow_box_blur": {
       "source_sha256": "6b58c4662de3ad0f12e7e18102b1fbb9cf061f581749b1eb1a8116faaa4ecf47"
     },
+    "style_attribute": {
+      "source_sha256": "a990e64233c76d1fe662256eec83a67e5d9a2151876ff10aad58a70119492abb"
+    },
+    "style_tags_and_cascade": {
+      "source_sha256": "3e4ff0fcda8b9314a8660fb046f15ad286af8a37af19ef33c66dee5dcfdc2604"
+    },
     "text_align_center": {
       "source_sha256": "2e7dbda84f800fe7280532ef9aacddf59c7c9a7ccee4769f0308ecd262aacf11"
     },
@@ -175,5 +178,5 @@
   "browser": "chromium 153.0.8010.12",
   "template_version": 2,
   "inter_font_sha256": "4989b125924991b90d05b2d16e0e388c48f7d5bb8b30539bbf9c755278d0ccaf",
-  "generated_at": "2026-11-02T15:22:51Z"
+  "generated_at": "2026-11-02T15:35:06Z"
 }

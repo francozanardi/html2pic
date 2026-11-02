@@ -10,8 +10,9 @@ from ..shadow_parser import ShadowParser
 
 class TypographyApplicator(StyleApplicator):
     
-    def __init__(self, font_registry: FontRegistry = None):
+    def __init__(self, font_registry: FontRegistry = None, loader=None):
         self.font_registry = font_registry
+        self.loader = loader
         self.warnings = get_warning_collector()
         self.shadow_parser = ShadowParser(self.warnings)
     
@@ -39,6 +40,14 @@ class TypographyApplicator(StyleApplicator):
             font_list = self.font_registry.resolve_font_family(font_family, weight_str, font_style)
         else:
             font_list = [name.strip().strip('"\'') for name in font_family.split(',')]
+        
+        if self.loader is not None:
+            # @font-face sources are URLs; family names (e.g. 'Arial') are left untouched.
+            font_list = [
+                self.loader.localize(font, purpose='font') if self._is_url(font) else font
+                for font in font_list
+            ]
+            font_list = [font for font in font_list if font]
         
         if len(font_list) > 1:
             builder = builder.font_family(font_list[0])
@@ -154,6 +163,10 @@ class TypographyApplicator(StyleApplicator):
             if shadows:
                 builder = builder.text_shadows(*shadows)
         return builder
+    
+    @staticmethod
+    def _is_url(value: str) -> bool:
+        return value.startswith('data:') or '://' in value
     
     def _normalize_weight(self, weight: str) -> str:
         if weight.isdigit():

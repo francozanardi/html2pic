@@ -1,0 +1,15 @@
+<!-- html2pic-test: {"styles_in_html": true} -->
+<style>
+.row { display: flex; gap: 4px; }
+.c { width: 20px; height: 20px; background-color: #c0392b; }
+</style>
+<div class="row">
+  <div class="c"></div>
+  <style>
+    /* a later <style> wins ties, wherever it is in the document */
+    .c.late { background-color: #27ae60; }
+    .late { border-radius: 6px; }
+  </style>
+  <div class="c late"></div>
+  <div class="c" style="background-color: #2980b9"></div>
+</div>

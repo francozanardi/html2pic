@@ -11,8 +11,9 @@ from ...styling import DEFAULT_STYLES, ColorNormalizer
 class BackgroundApplicator(StyleApplicator):
     """Applies background-color and background-image."""
 
-    def __init__(self):
+    def __init__(self, loader=None):
         self.warnings = get_warning_collector()
+        self.loader = loader
         self._color_normalizer = ColorNormalizer()
     
     def apply(self, builder: Element, styles: Dict[str, Any]) -> Element:
@@ -42,6 +43,8 @@ class BackgroundApplicator(StyleApplicator):
                 builder = builder.background_color(gradient)
         elif bg_image.startswith('url('):
             url = self._extract_url(bg_image)
+            if url and self.loader is not None:
+                url = self.loader.localize(url, purpose='background image')
             if url:
                 size = styles.get('background-size', DEFAULT_STYLES['background-size'])
                 builder = builder.background_image(url, size)

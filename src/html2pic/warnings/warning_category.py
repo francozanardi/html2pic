@@ -11,3 +11,4 @@ class WarningCategory(Enum):
     UNSUPPORTED_FEATURE = "unsupported_feature"
     UNEXPECTED_ERROR = "unexpected_error"
     MESSAGE = "message"
+    RESOURCE = "resource"

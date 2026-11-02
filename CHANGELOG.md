@@ -5,6 +5,13 @@ All notable changes to html2pic will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- `<style>` elements and `style=""` attributes are applied (#1).
+- `base_url` argument: relative URLs of images, fonts and stylesheets resolve against it (or
+  against `<base href>`); `url()`s inside a stylesheet resolve against that stylesheet (#3).
+- `fetcher` argument to opt into loading `<link rel="stylesheet">`, `@import` and remote
+  images/fonts, plus ready-made `local_fetcher`, `http_fetcher` and `chain_fetchers` in
+  `html2pic.fetchers`. Nothing is fetched without it.
+- `data:` URIs for images, fonts and stylesheets.
 - Descendant (`.card h1`), child (`ul > li`) and compound (`div.card#main`) selectors, with
   real CSS specificity. Still-unsupported selectors are skipped with a warning.
 - `background` shorthand (color and/or `url()`/`linear-gradient()` image).
@@ -13,6 +20,9 @@ All notable changes to html2pic will be documented in this file.
 - Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.10–3.13.
 
 ### Fixed
+- `@media` blocks were parsed as regular rules with a bogus selector; they are now skipped
+  with a warning.
+- Remote `@font-face` URLs were documented as supported but silently ignored.
 - `rem` units were never converted.
 - `font-size` in `em`/`%` was relative to 16px instead of the parent's font size.
 - Percentage `border-radius` (e.g. `50%` for circles) and other percentage values were
