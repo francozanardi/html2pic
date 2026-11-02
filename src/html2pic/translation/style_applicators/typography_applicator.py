@@ -29,6 +29,17 @@ class TypographyApplicator(StyleApplicator):
         builder = self._apply_text_decoration(builder, styles)
         return builder
     
+    def apply_inline(self, builder, styles: Dict[str, Any]):
+        """Apply the typography a PicTex ``Span`` supports (no alignment/line metrics)."""
+        builder = self._apply_font_family(builder, styles)
+        builder = self._apply_font_size(builder, styles)
+        builder = self._apply_font_weight(builder, styles)
+        builder = self._apply_font_style(builder, styles)
+        builder = self._apply_text_color(builder, styles)
+        builder = self._apply_text_shadow(builder, styles)
+        builder = self._apply_text_decoration(builder, styles)
+        return builder
+    
     def _apply_font_family(self, builder: Element, styles: Dict[str, Any]) -> Element:
         font_family = styles.get('font-family', DEFAULT_STYLES['font-family'])
         font_weight = styles.get('font-weight', DEFAULT_STYLES['font-weight'])

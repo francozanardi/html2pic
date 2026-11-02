@@ -1,0 +1,7 @@
+<!-- html2pic-test: {"max_diff_ratio": 0.02, "shift_tolerance": 1, "xfail": "line boxes with mixed font sizes: browsers grow the line to fit each inline box's half-leading around the shared baseline; PicTex lines stay at the block's line-height"} -->
+<style>
+p { width: 200px; font-size: 16px; line-height: 20px; }
+.small { font-size: 11px; }
+.big { font-size: 24px; }
+</style>
+<p>Normal <span class="small">small</span> and <span class="big">big</span> words on one line</p>

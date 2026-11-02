@@ -270,8 +270,11 @@ class TestElementFactory:
     def test_block_is_column(self):
         assert isinstance(ElementFactory().create(self.node("div")), Column)
 
-    def test_inline_tag_is_row(self):
-        assert isinstance(ElementFactory().create(self.node("span")), Row)
+    def test_inline_display_is_row(self):
+        assert isinstance(ElementFactory().create(self.node("span", display="inline")), Row)
+
+    def test_inline_tag_with_block_display_is_column(self):
+        assert isinstance(ElementFactory().create(self.node("span", display="block")), Column)
 
     @pytest.mark.parametrize("direction, cls", [("row", Row), ("row-reverse", Row), ("column", Column), ("column-reverse", Column)])
     def test_flex_direction(self, direction, cls):

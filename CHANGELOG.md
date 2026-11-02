@@ -23,6 +23,10 @@ All notable changes to html2pic will be documented in this file.
 - Test suite (unit + rendering integration tests) and GitHub Actions CI on Python 3.9–3.13.
 
 ### Fixed
+- Mixed inline content was stacked vertically: `<p>Hello <b>bold</b> text</p>` rendered on
+  three lines. Runs of inline content now render as one rich text (PicTex `Text` + `Span`s)
+  that wraps as a paragraph, with CSS whitespace collapsing and `<br>` support. Inline
+  elements (`span`, `a`, `b`, `em`, ...) are now `display: inline` by default.
 - Linear gradients now use the exact CSS geometry: the gradient line length depends on the
   box's aspect ratio, corner directions (`to top right`) are perpendicular to the diagonal,
   px stop positions and stops outside 0–100% work, and colors interpolate in premultiplied

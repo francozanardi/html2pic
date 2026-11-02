@@ -53,10 +53,7 @@ class ElementFactory:
         return node.computed_styles.get('display') == 'flex'
     
     def _is_inline(self, node: DOMNode) -> bool:
-        display = node.computed_styles.get('display', DEFAULT_STYLES['display'])
-        if display == 'inline':
-            return True
-        return node.tag in self.INLINE_TAGS
+        return node.computed_styles.get('display', DEFAULT_STYLES['display']) == 'inline' 
     
     def create_text(self, content: str) -> Text:
         """Create a Text element."""

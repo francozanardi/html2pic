@@ -7,7 +7,7 @@ from ..dom import DOMNode, NodeType
 from ..parsing import CSSRule
 from ..fonts import FontRegistry
 from ..warnings import get_warning_collector
-from .default_styles import DEFAULT_STYLES
+from .default_styles import DEFAULT_STYLES, INLINE_ELEMENTS
 from .unit_converter import UnitConverter
 from .color_normalizer import ColorNormalizer
 from .cascade_resolver import CascadeResolver
@@ -57,6 +57,8 @@ class StyleEngine:
         match_rules: bool = True,
     ):
         computed = DEFAULT_STYLES.copy()
+        if node.is_element() and node.tag in INLINE_ELEMENTS:
+            computed['display'] = 'inline'
         
         for prop in self.INHERITED_PROPERTIES:
             if prop in parent_styles:

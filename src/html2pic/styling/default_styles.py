@@ -1,5 +1,12 @@
 """Default CSS style values."""
 
+# Elements that are inline by default (the user-agent stylesheet's `display: inline`).
+INLINE_ELEMENTS = {
+    'a', 'abbr', 'b', 'bdi', 'bdo', 'br', 'cite', 'code', 'data', 'dfn', 'em', 'i', 'img',
+    'kbd', 'label', 'mark', 'q', 's', 'samp', 'small', 'span', 'strong', 'sub', 'sup',
+    'time', 'u', 'var',
+}
+
 DEFAULT_STYLES = {
     # Layout
     'display': 'block',
